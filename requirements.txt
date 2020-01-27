@@ -1,0 +1,3 @@
+requests
+veracode-api-signing
+httpie

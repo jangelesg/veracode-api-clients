@@ -1,0 +1,2908 @@
+swagger: "2.0"
+info:
+  description: "Web Application Scanning Configuration API Documentation"
+  version: "1.0"
+  title: Veracode Web Application Scanning Configuration Service API
+  termsOfService: "urn:tos"
+  contact:
+    email: veracode@veracode.com
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: api.veracode.com
+basePath: /was/configservice/v1
+schemes:
+  - https
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+tags:
+  - name: v-1-analysis-api
+    description: Analysis and Scan API, V1.
+  - name: v-1-configuration-api
+    description: Configuration API, V1.
+  - name: v-1-occurrence-api
+    description: Analysis and Scan Occurrence API, V1.
+security:
+  - Bearer: []
+paths:
+  /analyses:
+    get:
+      tags:
+        - v-1-analysis-api
+      summary: Returns a list of Dynamic Analyses for the current organization or a specified, alternate organization.
+      operationId: findAnalysisSummariesUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: page
+          in: query
+          description: The number of the results page you want to retrieve (0..N), where the default is 0 if you do not specify a page.
+          required: false
+          type: integer
+          format: int32
+        - name: size
+          in: query
+          description: The number of records you want to display per page. The maximum is 100 and the default is 20.
+          required: false
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: >
+            Sorting criteria in the format: property(,asc|desc). The default sort order is ascending.
+            The following sort criteria are supported: name, status, number_of_scans, latest_occurrence_date_time.
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: name
+          in: query
+          description: Filter by the Dynamic Analysis name.
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: Filter by the Dynamic Analysis status.
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - SCHEDULED
+              - SUBMITTING
+              - SUBMITTED
+              - NOT_SUBMITTED
+              - IN_PROGRESS
+              - IN_PROGRESS_WITH_WARNING
+              - VERIFICATION_FAILED
+              - PAUSING
+              - PAUSED
+              - RESUMING
+              - STOPPING_SAVING_RESULT
+              - STOPPING_DELETING_RESULT
+              - STOPPED
+              - STOPPED_TECHNICAL_ISSUE
+              - STOPPED_VERIFYING_RESULTS_BY_USER
+              - STOPPED_VERIFYING_RESULTS
+              - FINISHED_VERIFYING_RESULTS
+              - FINISHED_RESULTS_AVAILABLE
+          collectionFormat: multi
+      responses:
+        '200':
+          description: Success. The requested results page is now available.
+          schema:
+            $ref: '#/definitions/PagedAnalysisSummary'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    post:
+      tags:
+        - v-1-analysis-api
+      summary: >
+        Creates a new Dynamic Analysis for the account, if the user has access to the account. Returns the URL of the 
+        new analysis in the HTTP response header.
+      operationId: createAnalysisUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: run_verification
+          in: query
+          description: 'If true, then the Dynamic Analysis is created and a verification scan starts immediately.'
+          required: false
+          type: boolean
+        - name: validate_only
+          in: query
+          description: 'If true, the request is only validated and run_verification is ignored.'
+          required: false
+          type: boolean
+          default: false
+        - in: body
+          name: analysis
+          description: Details of the Dynamic Analysis request.
+          required: true
+          schema:
+            $ref: '#/definitions/AnalysisRequest'
+      responses:
+        '201':
+          description: >
+            You have successfully submitted your Dynamic Analysis. The URL of the new analysis is in the HTTP response header.
+          headers:
+            location:
+              type: string
+              description: Link to the newly created analysis.
+        '202':
+           description: >
+             You have successfully validated your Dynamic Analysis.
+        '400':
+          description: >
+            Invalid request. If there is no response body, your request contains malformed JSON. If there is a 
+            response body, Veracode could not validate your JSON payload. Verify the source attribute in each 
+            service error in the response and the associated code.
+          schema:
+            $ref: '#/definitions/EmbeddedErrorData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '500':
+          description: Server-side error. Please try again later.
+  '/analyses/{analysis_id}':
+    get:
+      tags:
+        - v-1-analysis-api
+      summary: Returns the Dynamic Analysis for the provided identifier.
+      operationId: findAnalysisByIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: analysis_id
+          in: path
+          description: Identifier of the Dynamic Analysis.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success. The Dynamic Analysis is returned.
+          schema:
+            $ref: '#/definitions/Analysis'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    put:
+      tags:
+        - v-1-analysis-api
+      summary: 'Updates a Dynamic Analysis for the provided identifier.'
+      operationId: updateAnalysisUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: analysis_id
+          in: path
+          description: Identifier of the Dynamic Analysis.
+          required: true
+          type: string
+        - in: body
+          name: analysis
+          description: Details of the Dynamic Analysis.
+          required: false
+          schema:
+            $ref: '#/definitions/AnalysisRequest'
+        - name: run_verification
+          in: query
+          description: >
+            If true, then Veracode updates the Dynamic Analysis and starts a verification scan immediately if no other 
+            occurrences of the Dynamic Analysis are in progress.
+          required: false
+          type: boolean
+        - name: method
+          in: query
+          description: >
+            If set to PATCH, Veracode replaces the content, except for the list of URLs in the Dynamic Analysis. 
+            The list of URLs are partially updated based on the action_type attribute for each individual analysis 
+            update request.'
+          required: false
+          type: string
+          enum:
+            - PATCH
+      responses:
+        '204':
+          description: The Dynamic Analysis is successfully updated. No response body is returned.
+        '400':
+          description: >
+            Invalid request. If there is no response body, your request contains malformed JSON. If there is a response body, 
+            Veracode could not validate your JSON payload. Verify the source attribute in each service error in the response 
+            and the associated code.
+          schema:
+            $ref: '#/definitions/EmbeddedErrorData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description:  Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    delete:
+      tags:
+        - v-1-analysis-api
+      summary: Deletes the Dynamic Analysis for the provided identifier. You can only hard-delete an analysis if it has never run.
+      operationId: deleteAnalysisUsingDELETE
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: analysis_id
+          in: path
+          description: Identifier of the Dynamic Analysis.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Successfully deleted the Dynamic Analysis.
+        '400':
+          description: You cannot delete this Dynamic Analysis as it is in progress or has already finished.
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description:  Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/analyses/{analysis_id}/audits':
+    get:
+      tags:
+        - v-1-analysis-api
+      summary: Returns a list of audit logs for the specified Dynamic Analysis.
+      operationId: findAnalysisAuditsByIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: analysis_id
+          in: path
+          description: Identifier of the Dynamic Analysis.
+          required: true
+          type: string
+        - name: page
+          in: query
+          description: The number of the results page you want to retrieve (0..N), where the default is 0 if you do not specify a page.
+          required: false
+          type: integer
+          format: int32
+        - name: size
+          in: query
+          description: The number of records you want to display per page. The maximum is 100 and the default is 20.
+          required: false
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: 'Sorting criteria in the format: property(,asc|desc). The default sort order is ascending. The supported sort criteria are event_type and audited_on.'
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+      responses:
+        '200':
+          description: Returns a list of activitiy audit logs.
+          schema:
+            $ref: '#/definitions/PagedAuditData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/analyses/{analysis_id}/scans':
+    get:
+      tags:
+        - v-1-analysis-api
+      summary: Returns a list of all occurrences of the Dynamic Analysis.
+      operationId: findAllScansForAnalysisUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: analysis_id
+          in: path
+          description: Dynamic Analysis identifier.
+          required: true
+          type: string
+        - name: page
+          in: query
+          description: The number of the results page you want to retrieve (0..N), where the default is 0 if you do not specify a page.
+          required: false
+          type: integer
+          format: int32
+        - name: size
+          in: query
+          description: The number of records you want to display per page. The maximum is 100 and the default is 20.
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: Success. The requested pages of occurrences of the specified Dynamic Analysis are displayed.
+          schema:
+            $ref: '#/definitions/PagedDetailedScan'
+        '400':
+          description: The analysis ID is not in a valid format. Verify the analysis ID and try again.
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    post:
+      tags:
+        - v-1-analysis-api
+      summary: Adds one or more new URLs to the Dynamic Analysis. You can also add URLs by updating the analysis.
+      operationId: addScansToAnalysisUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: analysis_id
+          in: path
+          description: Dynamic Analysis identifier.
+          required: true
+          type: string
+        - in: body
+          name: scans
+          description: scans
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ScanRequest'
+      responses:
+        '201':
+          description: You have successfully added URL scans to the Dynamic Analysis.
+        '400':
+          description: Request failed. Some of the data in the request is invalid. Verify the data in your request and try again.
+          schema:
+            $ref: '#/definitions/EmbeddedErrorData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  /analysis_occurrences:
+    get:
+      tags:
+        - v-1-occurrence-api
+      summary: >
+        Returns a list of occurrences of the Dynamic Analysis. By default, Veracode only returns the occurrences that 
+        started earlier than todays date. Optionally, you can use the status parameter to only return a list of 
+        occurrences of the provided Dynamic Analysis identifier with the specified status(es).
+      operationId: findAnalysisOccurrencesByAnalysisIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: include_verification
+          in: query
+          description: Set the parameter to true if you want the results to include the verification details of the returned occurrences.
+          required: false
+          type: boolean
+          default: false
+        - name: analysis_id
+          in: query
+          description: Dynamic Analysis identifier.
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: The status of the Dynamic Analysis occurrences.
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: start_date_after
+          in: query
+          description: >
+            The date from when you want the date range to start. The date should be ISO-8601 format or specify the exact 
+            duration, such as: 2h (2 hours ago) 2d (2 days ago) or 2m (2 minutes ago).
+          required: false
+          type: string
+        - name: start_date_before
+          in: query
+          description: >
+            The date when you want the date range to finish. The date should be ISO-8601 format or specify the exact duration, 
+            such as: 2h (2 hours in the future) -2d (2 days in the future) or 2m (2 minutes in the future).
+          required: false
+          type: string
+        - name: page
+          in: query
+          description: >
+            The number of the results page you want to retrieve (0..N), where the default is 0 if you do not specify a page.
+          required: false
+          type: integer
+          format: int32
+        - name: size
+          in: query
+          description: The number of records you want to display per page. The maximum is 100 and the default is 20.
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: Success. The requested list of Dynamic Analysis occurrences is now available.
+          schema:
+            $ref: '#/definitions/PagedAnalysisOccurrence'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/analysis_occurrences/{analysis_occurrence_id}':
+    get:
+      tags:
+        - v-1-occurrence-api
+      summary: Returns the Dynamic Analysis occurrence for the specified identifier.
+      operationId: findAnalysisOccurrenceByAnalysisOccurrenceIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: analysis_occurrence_id
+          in: path
+          description: Identifier of the Dynamic Analysis occurrence.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success. The requested Dynamic Analysis occurrence is returned.
+          schema:
+            $ref: '#/definitions/AnalysisOccurrence'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    put:
+      tags:
+        - v-1-occurrence-api
+      summary: Performs the specified action on the specified occurrence.
+      operationId: performAnalysisOccurrenceActionUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: analysis_occurrence_id
+          in: path
+          description: Identifier of the occurrence.
+          required: true
+          type: string
+        - name: action
+          in: query
+          description: Action to perform.
+          required: true
+          type: string
+          enum:
+            - STOP_SAVE
+            - STOP_DELETE
+      responses:
+        '200':
+          description: 'Successfully performed the action. The Dynamic Analysis occurrence is updated.'
+          schema:
+            $ref: '#/definitions/AnalysisOccurrence'
+        '400':
+          description: Invalid request. Verify the request details and try again.
+          schema:
+            $ref: '#/definitions/EmbeddedErrorData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/analysis_occurrences/{analysis_occurrence_id}/scan_occurrences':
+    get:
+      tags:
+        - v-1-occurrence-api
+      summary: Returns a list of completed URL scan occurrences for the specified Dynamic Analysis occurrence.
+      operationId: findScanOccurrencesByAnalysisOccurrenceIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - '*/*'
+      parameters:
+        - name: analysis_occurrence_id
+          in: path
+          description: Identifier of the Dynamic Analysis occurrence.
+          required: true
+          type: string
+        - name: page
+          in: query
+          description: The number of the results page you want to retrieve (0..N), where the default is 0 if you do not specify a page.
+          required: false
+          type: integer
+          format: int32
+        - name: size
+          in: query
+          description: The number of records you want to display per page. The maximum is 100 and the default is 20.
+          required: false
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: >
+            The sort criteria you want to use in the format: property(,asc|desc). The default sort order is ascending. 
+            The following sort criteria are supported: linked_platform_app_name, status, scheduled_date, start_date, 
+            total_flaw_count, count_of_failed_verifications, count_of_very_high_sev_flaws, count_of_high_sev_flaws, 
+            count_of_medium_sev_flaws, count_of_low_sev_flaws.
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: url
+          in: query
+          description: Filter the results by the specified URL.
+          required: false
+          type: string
+        - name: linked_platform_app_name
+          in: query
+          description: Filter by the application linked to the Dynamic Analysis.
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+        - name: scan_locked
+          in: query
+          description: Filter by URL scan locked status. A URL scan is locked when Veracode is reviewing it.
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: Success. The requested page of Dynamic Analysis occurrences is now available.
+          schema:
+            $ref: '#/definitions/PagedDetailedScanOccurrence'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  /code_groups:
+    get:
+      tags:
+        - v-1-configuration-api
+      summary: Returns a list of code groups
+      operationId: getCodeGroupsUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Returns a list of code (enumeration) groups.
+          schema:
+            type: array
+            items:
+              type: object
+              description: Each code group has a name (identifier) and a link to fetch the details of the code group.
+              properties:
+                name:
+                  type: string
+                _links:
+                  type: array
+                  items:
+                    $ref: '#/definitions/Link'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '500':
+          description: Server-side error. Please try again later.
+  '/code_groups/{name}':
+    get:
+      tags:
+        - v-1-configuration-api
+      summary: Returns the details of a code group.
+      operationId: findCodeGroupByIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: name
+          in: path
+          description: Name (identifier) of the code group.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success. The list of code group values for the code group is available.
+          schema:
+            $ref: '#/definitions/ListedCode'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  /configuration:
+    get:
+      tags:
+        - v-1-configuration-api
+      summary: Returns the default Dynamic Analysis configuration for the organization.
+      operationId: getDefaultConfigurationUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      responses:
+        '200':
+          description: Returns default configuration and capabilities.
+          schema:
+            $ref: '#/definitions/UserConfiguration'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  /scan_capacity_summary:
+    get:
+      tags:
+        - v-1-configuration-api
+      summary: Returns the scan capacity summary for the organization.
+      operationId: getAccountScanCapacitySummaryUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      responses:
+        '200':
+          description: Successfully returns the default configuration and capabilities/permitted actions.
+          schema:
+            $ref: '#/definitions/ScanCapacitySummary'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/scan_occurrences/{scan_occurrence_id}':
+    get:
+      tags:
+        - v-1-occurrence-api
+      summary: Returns the URL scan occurrence for the provided URL scan occurrence identifier.
+      operationId: findScanOccurenceByOccurrenceIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: scan_occurrence_id
+          in: path
+          description: Identifier of the URL scan occurrence.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully returns the URL scan occurrence.
+          schema:
+            $ref: '#/definitions/DetailedScanOccurrence'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan occurrence identifier. Verify the URL scan occurrence ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    put:
+      tags:
+        - v-1-occurrence-api
+      summary: Performs the specified action on the URL scan occurrence.
+      operationId: performScanOccurrenceActionUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: scan_occurrence_id
+          in: path
+          description: Identifier of the URL scan occurrence.
+          required: true
+          type: string
+        - name: action
+          in: query
+          description: Action to be performed.
+          required: true
+          type: string
+          enum:
+            - STOP_SAVE
+            - STOP_DELETE
+            - RESUBMIT
+      responses:
+        '200':
+          description: 'Successfully performed the action. The URL scan occurrence is updated.'
+          schema:
+            $ref: '#/definitions/DetailedScanOccurrence'
+        '201':
+          description: Created URL scan occurrence.
+        '400':
+          description: Invalid request. Verify the request details and try again.
+          schema:
+            $ref: '#/definitions/EmbeddedErrorData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan occurrence identifier. Verify the URL scan occurrence ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/scan_occurrences/{scan_occurrence_id}/configuration':
+    get:
+      tags:
+        - v-1-occurrence-api
+      summary: Returns the configuration for the specified URL scan occurrence.
+      operationId: getRuntimeScanConfigurationUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: scan_occurrence_id
+          in: path
+          description: Identifier of the URL scan occurrence.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully returns the URL scan configuration at the time of the URL scan submission.
+          schema:
+            $ref: '#/definitions/ScanConfiguration'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan occurrence identifier. Verify the URL scan occurrence ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/scan_occurrences/{scan_occurrence_id}/verification_report':
+    get:
+      tags:
+        - v-1-occurrence-api
+      summary: Returns the Verification Report, which contains connection and authentication details for the specified scan occurrence ID.
+      operationId: findVerificationReportUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: scan_occurrence_id
+          in: path
+          description: Identifier of the URL scan occurrence.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Returns runtime scan configuration at the time of submission of this occurrence.
+          schema:
+            $ref: '#/definitions/VerificationReport'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan occurrence identifier. Verify the URL scan occurrence ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/scans/{scan_id}':
+    get:
+      tags:
+        - v-1-analysis-api
+      summary: Returns a URL scan.
+      operationId: findScanByIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: scan_id
+          in: path
+          description: Identifier of the URL scan.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Returns the URL scan.
+          schema:
+            $ref: '#/definitions/DetailedScan'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan identifier. Verify the URL scan ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    put:
+      tags:
+        - v-1-analysis-api
+      summary: Updates the URL scan request.
+      operationId: updateScanUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: scan_id
+          in: path
+          description: Identifier of the URL scan.
+          required: true
+          type: string
+        - in: body
+          name: scan
+          description: The URL scan data.
+          required: false
+          schema:
+            $ref: '#/definitions/ScanRequest'
+        - name: scanner_version
+          in: query
+          description: Version of scan engine.
+          required: false
+          type: string
+        - name: method
+          in: query
+          description: >
+            If set to PATCH, this call partially replaces the content. The update does not affect the list of scans in the 
+            Dynamic Analysis request.
+          required: false
+          type: string
+          enum:
+            - PATCH
+      responses:
+        '204':
+          description: Successfully updated the URL scan.
+          schema:
+            type: object
+        '400':
+          description: Invalid request. Verify the request details and try again. Data may be structured correctly but is not valid.
+          schema:
+            $ref: '#/definitions/EmbeddedErrorData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan identifier. Verify the Dynamic URL scan ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    delete:
+      tags:
+        - v-1-analysis-api
+      summary: Deletes the URL scan with the specified dentifier. You can only delete scans that have never run.
+      operationId: deleteScanUsingDELETE
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: scan_id
+          in: path
+          description: Identifier of the URL scan.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Successfully deleted the URL scan.
+          schema:
+            type: object
+        '400':
+          description: You cannot delete this URL scan as it is in progress or has never run before.
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan identifier. Verify the URL scan ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/scans/{scan_id}/audits':
+    get:
+      tags:
+        - v-1-analysis-api
+      summary: Returns a list of audits (activity logs) for the provided URL scan identifier.
+      operationId: findScanAuditsByIdUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: scan_id
+          in: path
+          description: Identifier of the URL scan.
+          required: true
+          type: string
+        - name: page
+          in: query
+          description: The number of the results page you want to retrieve (0..N), where the default is 0 if you do not specify a page.
+          required: false
+          type: integer
+          format: int32
+        - name: size
+          in: query
+          description: The number of records you want to display per page. The maximum is 100 and the default is 20.
+          required: false
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: >
+            Use sort criteria in the format: property(,asc|desc). The default sort order is ascending. Supported sort 
+            criteria are event_type and audited_on.
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+      responses:
+        '200':
+          description: Successfully returned audits (activity logs) for the URL scan.
+          schema:
+            $ref: '#/definitions/PagedAuditData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+  '/scans/{scan_id}/configuration':
+    get:
+      tags:
+        - v-1-analysis-api
+      summary: Returns the configuration for the specified URL scan.
+      operationId: getScanConfigurationUsingGET
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: scan_id
+          in: path
+          description: Identifier of the URL scan.
+          required: true
+          type: string
+        - name: runtime
+          in: query
+          description: >
+            If true, this call returns the configuration that applies to the specified URL scan as well as the Dynamic 
+            Analysis configuration and the system defaults.
+          required: false
+          type: boolean
+          default: false
+      responses:
+        '200':
+          description: Successfully returned the configuration for the specified URL scan.
+          schema:
+            $ref: '#/definitions/ScanConfiguration'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan identifier. Verify the URL scan ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+    put:
+      tags:
+        - v-1-analysis-api
+      summary: Updates the configuration for the specified URL scan.
+      operationId: updateScanConfigurationUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: scan_id
+          in: path
+          description: Identifier of the URL scan.
+          required: true
+          type: string
+        - in: body
+          name: configuration
+          description: URL scan configuration.
+          required: false
+          schema:
+            $ref: '#/definitions/ScanConfigurationRequest'
+        - name: method
+          in: query
+          description: 'When set to PATCH, the configuration content is partially updated.'
+          required: false
+          type: string
+          enum:
+            - PATCH
+      responses:
+        '204':
+          description: Successfully updated the URL scan configuration.
+          schema:
+            type: object
+        '400':
+          description: Invalid request. Verify the request details and try again. Data may be structured correctly but is not valid.
+          schema:
+            $ref: '#/definitions/EmbeddedErrorData'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown URL scan identifier. Verify the URL scan ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+
+  /platform_applications:
+    get:
+      tags:
+        - v-1-analysis-api
+      summary: Returns a list of applications in the Veracode Platform.
+      operationId: findPlatformApplicationsUsingGET
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: page
+          in: query
+          description: The number of the results page you want to retrieve (0..N), where the default is 0 if you do not specify a page.
+          required: false
+          type: integer
+          format: int32
+        - name: size
+          in: query
+          description: The number of records you want to display per page. The maximum is 100 and the default is 20.
+          required: false
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: 'Use this parameter to sort the results in the format: property(,asc|desc). The default sort order is ascending. The following sort criteria are supported: name, id'
+          required: false
+          type: string
+        - name: application_name
+          in: query
+          description: Application name-based search parameter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully returned the requested page of Platform Applications.
+          schema:
+            $ref: '#/definitions/PagedPlatformApplication'
+        '401':
+          description: You are not authorized to perform this action.
+        '403':
+          description: Access denied. You are not authorized to make this request.
+        '404':
+          description: Unknown Dynamic Analysis identifier. Verify the Dynamic Analysis ID and try again.
+        '500':
+          description: Server-side error. Please try again later.
+definitions:
+  Analysis:
+    description: >
+      A Dynamic Analysis can contain one or multiple URL scans, each for a unique application, that are run on the same schedule and share a common set of configuration settings.
+    type: object
+    properties:
+      analysis_id:
+        type: string
+        description: Identifier of the Dynamic Analysis.
+      name:
+        type: string
+        description: Name of the Dynamic Analysis.
+      org:
+        type: string
+        description: Identifier of the organization.
+      org_info:
+        description: Organization details.
+        $ref: '#/definitions/OrgInformation'
+      scan_setting:
+        description: Scan setting for the Dynamic Analysis that applies to all URL scans in analysis, unless overridden at the URL scan level.
+        $ref: '#/definitions/ScanSetting'
+      schedule:
+        description: The schedule for the Dynamic Analysis.
+        $ref: '#/definitions/ScanSchedule'
+      special_instructions:
+        type: string
+        description: Special instructions related to the Dynamic Analysis. Can be null. Instructions can delay the analysis.
+      throttled:
+        type: boolean
+      visibility:
+        description: The setting that determines who can access the analysis.
+        $ref: '#/definitions/VisibilitySetup'
+      created_on:
+        type: string
+        description: The UTC-format date and time when the Dynamic Analysis was created.
+      last_modified_on:
+        type: string
+        description: UTC-format date and time when the Dynamic Analysis was last modified.
+      latest_occurrence_status:
+         description: Status of the latest occurrence of this Dynamic Analysis.
+         $ref: '#/definitions/AnalysisOccurrenceStatus'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+  AnalysisOccurrence:
+    description: >
+      An analysis occurrence is an instance of a Dynamic Analysis that is in progress or has completed.
+    type: object
+    properties:
+      actual_end_date:
+        type: string
+        description: The date and time the Dynamic Analysis ended.
+      actual_start_date:
+        type: string
+        description: The date and time the Dynamic Analysis started.
+      all_scans_passed_verification:
+        type: boolean
+      analysis_id:
+        type: string
+        description: Identifier of the Dynamic Analysis an occurrence is based on. This field cannot be null or empty.
+      analysis_occurrence_id:
+        type: string
+        description: Unique identifier for an occurrence of a Dynamic Analysis. This field cannot be null or empty.
+      count_of_failed_verifications:
+        type: integer
+        format: int64
+        description: Number of URL scan occurrences that failed verifications.
+      duration:
+        type: string
+        description: Duration of the Dynamic Analysis occurrence.
+      end_date:
+        type: string
+        description: The date and time when the Dynamic Analysis is scheduled to end.
+      percent_scanned:
+        type: integer
+        format: int32
+        description: The percentage of URL scans completed.
+      start_date:
+        type: string
+        description: The date and time when the Dynamic Analysis is scheduled to start.
+      status:
+        description: The status of the Dynamic Analysis occurrence. This field cannot be null or empty.
+        $ref: '#/definitions/AnalysisOccurrenceStatus'
+      verification_only:
+        type: boolean
+        example: false
+        description: Set this value to true if you want this analysis occurrence to only run for verification purposes.
+      created_on:
+        type: string
+        description: The UTC-format for the date and time when the Dynamic Analysis was created.
+      last_modified_on:
+        type: string
+        description: The UTC-format for the date and time when the Dynamic Analysis was last modified.
+      capabilities:
+        type: array
+        items:
+          type: string
+  AnalysisOccurrenceStatus:
+    type: object
+    properties:
+      status_type:
+        type: string
+        description: The status of the Dynamic Analysis occurrence.
+        enum:
+          - SCHEDULED
+          - SUBMITTING
+          - SUBMITTED
+          - NOT_SUBMITTED
+          - IN_PROGRESS
+          - IN_PROGRESS_WITH_WARNING
+          - VERIFICATION_FAILED
+          - PAUSING
+          - PAUSED
+          - RESUMING
+          - STOPPING_SAVING_RESULT
+          - STOPPING_DELETING_RESULT
+          - STOPPED
+          - STOPPED_TIME
+          - STOPPED_TIME_VERIFYING_RESULTS
+          - STOPPED_TECHNICAL_ISSUE
+          - STOPPED_VERIFYING_RESULTS_BY_USER
+          - STOPPED_VERIFYING_RESULTS
+          - FINISHED_VERIFYING_RESULTS
+          - FINISHED_VERIFYING_RESULTS_WITH_WARNING
+          - FINISHED_RESULTS_AVAILABLE
+          - FINISHED_RESULTS_AVAILABLE_WITH_WARNING
+          - NOT_RUN
+          - UNKNOWN_STATUS
+    description: The status of the Dynamic Analysis.
+  AnalysisRequest:
+    description: >
+      The Dynamic Analysis request. A Dynamic Analysis can contain one or multiple URL scans, each for a unique application, 
+      that are run on the same schedule and share a common set of configuration settings. You can use this request object for 
+      both creating and updating an analysis.
+    type: object
+    properties:
+      name:
+        type: string
+        description: >
+          Name of the Dynamic Analysis. The name must be unique to the application porfolio of the organizjation and the 
+          length must be between 6 and 256 characters.
+      org_info:
+        description: Organization information.
+        $ref: '#/definitions/OrgInformation'
+      scan_setting:
+        description: The Dynamic Analysis scan level setting that applies to all URL scans in this analysis.
+        $ref: '#/definitions/ScanSetting'
+      scans:
+        type: array
+        description: The list of URL scans included in the analysis.
+        items:
+          $ref: '#/definitions/ScanRequest'
+      schedule:
+        description: >
+          The schedule for the URL scan. This is optional. If not specified, no URL scans will run. You can still run verification scans.
+        $ref: '#/definitions/ScanSchedule'
+      special_instructions:
+        type: string
+        description: Special instructions related to the Dynamic Analysis. Can be null. Instructions can delay the analysis.
+      visibility:
+        description: Visibility setup.
+        $ref: '#/definitions/VisibilitySetup'
+  AnalysisSummary:
+    description: >
+      A summary of all the information for Dynamic Analysis that combines analysis data with the occurrence
+      information to present an unified view. The occurrence data includes the latest and the next-scheduled occurrences for both
+      regular and verification-only occurrences.
+    type: object
+    properties:
+      org:
+        type: string
+        description: Organization identifier.
+      analysis_id:
+        type: string
+        description: Unique identifier of the Dynamic Analysis.
+      name:
+        type: string
+        description: Name of the Dynamic Analysis.
+      number_of_scans:
+        type: integer
+        format: int64
+        description: Number of URL scans in the Dynamic Analysis.
+      schedule_summary:
+        description: Summary of the schedule for this Dynamic Analysis.
+        $ref: '#/definitions/ScanSchedule'
+      latest_occurrence_id:
+        type: string
+        description: Identifier of the latest occurrence of this Dynamic Analysis. 
+      latest_occurrence_date_time:
+        type: string
+        description: Start date and time in ISO-8601 format for the latest occurrence of this Dynamic Analysis. 
+      latest_occurrence_status:
+        description: Status of the latest occurrence of this Dynamic Analysis.
+        $ref: '#/definitions/AnalysisOccurrenceStatus'
+      latest_verification_occurrence_id:
+        description: Identifier of the latest verification-only occurrence of this Dynamic Analysis.
+        type: string
+      latest_verification_occurrence_status:
+        description: Status of the latest verification-only occurrence of this Dynamic Analysis.
+        $ref: '#/definitions/AnalysisOccurrenceStatus'
+      next_occurrence_date_time:
+        type: string
+        description: Date and time in ISO-8601 format for the next scheduled occurrence of this Dynamic Analysis.
+      has_verification_failures:
+        type: boolean
+        description: If this value is true, one or more URL scans in the analysis has failed verification.
+      has_result_import_in_progress:
+        type: boolean
+        description: If true, indicates one or more URL scans are having their results imported into corresponding linked application profiles.
+      throttled:
+        type: boolean
+        description: >
+          This value indicates that one or more URL scans of the latest occurrence of the Dynamic Analysis were throttled 
+          because the maximum number of URL scans was reached.
+      actions:
+        type: array
+        description: The list of actions that can be performed to this Dynamic Analysis based on the status of its latest occurrence.
+        items:
+          type: string
+          enum:
+            - STOP_SAVE
+            - STOP_DELETE
+            - PAUSE
+            - RESUME
+      created_on:
+        type: string
+        description: The UTC-format date and time of when the Dynamic Analysis occurrence was created.
+      last_modified_on:
+        type: string
+        description: The UTC-format date and time when the Dynamic Analysis occurrence was last modified.
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      capabilities:
+        type: array
+        items:
+          type: string
+  AuditData:
+    description: The activity log audit data. 
+    type: object
+    properties:
+      audited_on:
+        type: string
+        description: The date and time in ISO-8601 format when this activity log audit entry was created.
+      event_type:
+        type: string
+        description: The event type that triggered the activity log audit entry.
+      details:
+        type: string
+        description: Additional details about the activity log audit entry.
+      new_value:
+        type: string
+        description: > 
+          The new activity log audit entry value after update. Note: Sensitive values like passwords are not recorded in the activity log but the event entry is.
+      old_value:
+        type: string
+        description: >
+          The new activity log audit entry value before update. Note: Sensitive values like passwords are not recorded in the activity log but the event entry is.
+      parent_record_id:
+        type: string
+        description: The identity of the parent entity whose change triggered the activity log audit entry.
+      parent_record_type:
+        type: string
+        description: The type of the parent entity whose change triggred the activity log audit entry.
+      proxy_user:
+        type: boolean
+        description: If true, this was created by a user who was proxied.
+      system_user:
+        type: boolean
+        description: If true, this was created by a system-automated process.
+      user_display_name:
+        type: string
+        description: Display name of the user that created the activity log audit event, typically concatenated from the first and last names.
+      user_id:
+        type: string
+        description: Identity of the user who created the activity log audit event. 
+      username:
+        type: string
+        description: Username of the user who created the activity log audit event. 
+  Authentication:
+    description: >
+      An abstract of the authentication configuration. Extended types represent actual web application authentication
+      mechanisms such as form-based or basic authentication. There is also an auto-authentication type that works by automatically determining 
+      the login page of a web application when the username and password is provided.
+    type: object
+    properties:
+      authentication_id:
+        type: string
+        description: Unique authentication type record locator. It is absent when not persisted.
+      authtype:
+        type: string
+        description: Type of authentication.
+        enum:
+          - BASIC
+          - FORM
+          - AUTO
+          - CERT
+  AuthenticationConfiguration:
+    description: >
+      The authentication configuration for a URL scan, containg a map of authentication types and corresponding 
+      authentication data required for authentication using that type.
+    type: object
+    properties:
+      authentications:
+        description: List of authentications identifiers, including the identifiers of preexisting authentication events.
+        type: object
+        properties:
+          AUTO:
+            description: Auto-login authentication.
+            $ref: '#/definitions/AutoAuthentication'
+          FORM:
+            description: Form-based authentication.
+            $ref: '#/definitions/FormAuthentication'
+          BASIC:
+            description: Basic authentication.
+            $ref: '#/definitions/BasicAuthentication'
+          CERT:
+            description: Client certificate-based authentication.
+            $ref: '#/definitions/ClientCertAuthentication'
+  BlacklistConfiguration:
+    description: Blacklist or URL exclusion list configuration for a URL scan.
+    type: object
+    properties:
+      black_list:
+        type: array
+        description: Blacklisted URLs to exclude from the URL scan.
+        items:
+          $ref: '#/definitions/ScanURL'
+  UserConfiguration:
+    description: >
+      The configuration for the current user, based on permissions, account settings, 
+      and system defaults.
+    type: object
+    properties:
+      capabilities:
+        description: The capabilities of the current user.
+        type: array
+        items:
+          type: string
+          description: >
+            Type of capability. One or more of the following, depending on the permissions and account configuration of the current user.
+            user:
+          enum:
+            - link_platform_app
+            - create_analysis
+            - select_visibility_type
+            - select_internal_scan
+      default_scan_setting:
+        description: >
+          The default scan setting that is applied to any Dynamic Analysis or URL scan created by this user unless
+          configured or overridden by the user. The default scan setting is generated by combining the system and
+          the account default scan setting.
+        $ref: '#/definitions/ScanSetting'
+      auto_link_options:
+        description: >
+          The account-level auto-linking options when enabled.
+  Code:
+    description: Represents a coded entry in a code group. Lists basic properties but there can be additional properties specific to the code group.
+    type: object
+    properties:
+      id:
+        type: string
+        description: Identifier of the code, such as an enum value.
+      name:
+        type: string
+        description: Display name for the code. The value depends on the type of code group.
+      description:
+        type: string
+        description: Longer, optional description of the code.
+      default:
+        type: boolean
+        description: If this code group represents a choice of values, then this code is the default. There can only be one default code in a code group.
+      deprecated:
+        type: boolean
+        description: If true, do not use this value anymore. It is present for backwards compatibility.
+      fix:
+        type: string
+        description: If this code group captures errors, then this optional record represents a possible fix or workaround for the error.
+      generic:
+        type: boolean
+        description: This field is only returned for top-level errors.
+  ContactInformation:
+    description: Contact information for the person who is to receive notifications for a URL scan.
+    type: object
+    properties:
+      email:
+        type: string
+        description: Valid email address.
+      first_and_last_name:
+        type: string
+        description: First and last name.
+      telephone:
+        type: string
+        description: Optional telephone number.
+  DetailedScan:
+    description: >
+      Summary of URL scan, with associated properties and the status of its latest occurrence, and the latest verification (prescan) occurrence.
+    type: object
+    properties:
+      scan_id:
+        type: string
+        description: Identifier of the URL scan.
+      org:
+        type: string
+        description: Organization identifier.
+      target_url:
+        type: string
+        description: Target URL of the scan.
+      analysis_id:
+        type: string
+        description: Identifier of the Dynamic Analysis this URL scan is a part of. 
+      analysis_name:
+        type: string
+        description: Name of the Dynamic Analysis this URL scan is a part of.
+      internal_scan_configuration:
+        description: Configuration data for the internal scanning gateway and endpoint, if this scan is an internal scan.
+        $ref: '#/definitions/InternalScanConfiguration'
+      last_verified_by_prescan:
+        type: boolean
+        description: 'True, if the last verification was done using a prescan.'
+      last_verified_on:
+        type: string
+        description: Date and time this configuration was last verified using a prescan occurrence.
+      latest_occurrence_status:
+        description: Status of the latest occurrence of this URL scan.
+        $ref: '#/definitions/ScanOccurrenceStatus'
+      latest_occurrence_verifications:
+        type: array
+        description: List of the verifications completed for this URL scan in the latest occurrence.
+        items:
+          $ref: '#/definitions/ScanVerification'
+      linked_platform_app_uuid:
+        type: string
+        description: UUID of the Veracode Platform application linked to the URL scan. 
+      linked_platform_app_name:
+        type: string
+        description: >
+          Name of the linked application in the application portfoliio in the Veracode Platform, if this URL scan is 
+          linked to an application. 
+      scan_contact_info:
+        description: Contact information for the user to receive information about this URL scan.
+        $ref: '#/definitions/ContactInformation'
+      scan_locked:
+        type: boolean
+        example: false
+        description: If true, the URL scan is locked by Veracode and can only be edited or resubmitted by Veracode.
+      scan_locked_on:
+        type: string
+        description: Date and time the URL scan was locked.
+      created_on:
+        type: string
+        description: UTC-format date and time when the URL scan was created.
+      last_modified_on:
+        type: string
+        description: UTC-format date and time when the URL scan was last modified.
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      capabilities:
+        type: array
+        items:
+          type: string
+  DetailedScanOccurrence:
+    description: >
+      Details of a URL scan occurrence, combining information primarily from the occurrence and information from the URL scan and 
+      other entities it is related to. A URL scan occurrence is an actual runtime of a URL scan that is running or has run. 
+    type: object
+    properties:
+      scan_occurrence_id:
+        type: string
+        description: Unique identifier and locator of the URL scan occurrence. 
+      org:
+        type: string
+        description: Unique identifier of the organization. 
+      analysis_id:
+        type: string
+        description: Identifier of the Dynamic Analysis containing the URL scan of which the current scan occurrence is an instance.
+      analysis_name:
+        type: string
+        description: Name of the related Dynamic Analysis.
+      analysis_occurrence_id:
+        type: string
+        description: Identifer of the Dynamic Analysis occurrence of which this URL scan occurrence is part.
+      count_of_failed_verifications:
+        type: integer
+        format: int32
+        description: Count of failed verifications.
+      count_of_high_sev_flaws:
+        type: integer
+        format: int32
+        description: Count of high-severity flaws found in the URL scan.
+      count_of_low_sev_flaws:
+        type: integer
+        format: int32
+        description: Count of low-severity flaws found in the URL scan.
+      count_of_medium_sev_flaws:
+        type: integer
+        format: int32
+        description: Count of medium-severity flaws found in the scan. 
+      count_of_very_high_sev_flaws:
+        type: integer
+        format: int32
+        description: Count of very high-severity flaws found in the URL scan.
+      duration:
+        type: string
+        description: The duration of the URL scan occurrence. If null, no occurrence has run. 
+      expected_publish_date:
+        type: string
+        description: Date (In ISO-8601 format) when the URL scan occurrence is expected to be published.
+      has_custom_configuration:
+        type: boolean
+        description: >
+          If true, this URL scan has a custom scan configuration. A custom URL scan configuration scan only be specified by
+          Veracode and overrides the current configuration of the URL scan. 
+      internal_scan_configuration:
+        description: Internal scan configuration data, if the URL scan is configured as an internal scan.
+        $ref: '#/definitions/InternalScanConfiguration'   
+      extended_status:
+        type: string
+        description: Additional status information available for this URL scan occurrence. 
+        enum:
+          - INTERNAL_SCAN_SETUP_ERROR
+          - CREATE_TUNNEL_FAILED_ENDPOINT_UNAVAILABLE
+          - CREATE_TUNNEL_FAILED_ENDPOINT_ACCESS_DENIED
+          - GET_TUNNEL_INFO_FAILED_TIMEOUT
+          - GET_TUNNEL_INFO_FAILED_TUNNEL_NOT_READY
+          - CREATE_TUNNEL_FAILED_GATEWAY_OFFLINE
+          - CREATE_TUNNEL_FAILED_ENDPOINT_OFFLINE
+      linked_platform_app_name:
+        type: string
+        description: Name of the Veracode Platform application linked to the URL scan.
+      linked_platform_app_uuid:
+        type: string
+        description: UUID of the Veracode Platform application linked to the URL scan.
+      linked_platform_app_id:
+        type: integer
+        format: int32
+        description: The numeric identifier of the Veracode Platform application linked to the scan.
+      linked_app_info:
+        description: Additional Veracode Platform application information, including the results import status. 
+        $ref: '#/definitions/LinkedAppInfo'
+      result_import_status:
+        type: string
+        description: The status of the import task, if this occurrence results should be sent to an application if the URL scan is linked.
+        enum:
+          - REQUESTED
+          - INPROGRESS
+          - COMPLETED
+          - FAILED
+          - IGNORED
+          - INVALID
+      scan_contact_info:
+        description: Contact information for the person to received information about the URL scan.
+        $ref: '#/definitions/ContactInformation'
+      scan_id:
+        type: string
+        description: Identifier of the URL scan on which this occurrence is based.
+      scan_locked:
+        type: boolean
+        description: If true, this scan occurrence is locked by Veracode and can be edited and resubmitted by Veracode. 
+      scan_locked_on:
+        type: string
+        description: Time the scan of this URL scan occurrence was locked.
+      scheduled_start_date:
+        type: string
+        description: Date and time in ISO-8601 format when the occurrence is scheduled to start.
+      scheduled_end_date:
+        type: string
+        description: Date and time in ISO-8601format when the occurrence is scheduled to end.
+      start_date:
+        type: string
+        description: Actual start date and time, in ISO-8601 format.
+      end_date:
+        type: string
+        description: Actual end date and time, in ISO-8601 format.
+      status:
+        description: The status of the URL scan occurrence. Cannot be null or empty.
+        $ref: '#/definitions/ScanOccurrenceStatus'
+      summary:
+        description: A summary of the current URL scan occurrence results.
+        $ref: '#/definitions/ScanOccurrenceRuntimeSummary'
+      target_url:
+        type: string
+        description: The target URL of the scan occurrence.
+      total_flaw_count:
+        type: integer
+        format: int32
+        description: Total count of flaws found in the URL scan occurrence.
+      verification_only:
+        type: boolean
+        description: If true, this is a verification-only or prescan occurrence.
+      verifications:
+        type: array
+        description: List of verifications done on the scan.
+        items:
+          $ref: '#/definitions/ScanVerification'
+      created_on:
+        type: string
+        description: The UTC-format date and time when URL scan was created.
+      last_modified_on:
+        type: string
+        description: The UTC-format date and when the URL scan was last modified.
+      app_link_type:
+        type: string
+        description: The type of application linking of the scan.
+        enum:
+         - AUTO
+         - MANUAL
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      capabilities:
+        type: array
+        items:
+          type: string
+  EmbeddedErrorData:
+    description: Embedded errors.
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/Errors'
+  EmbeddedAnalysisOccurrence:
+    type: object
+    properties:
+      analysis_occurrences:
+        type: array
+        items:
+          $ref: '#/definitions/AnalysisOccurrence'
+  EmbeddedAnalysisSummary:
+    type: object
+    properties:
+      analyses:
+        type: array
+        items:
+          $ref: '#/definitions/AnalysisSummary'
+  EmbeddedAuditData:
+    type: object
+    properties:
+      audits:
+        type: array
+        items:
+          $ref: '#/definitions/AuditData'
+  EmbeddedDetailedScanOccurrence:
+    type: object
+    properties:
+      scan_occurrences:
+        type: array
+        items:
+          $ref: '#/definitions/DetailedScanOccurrence'
+  EmbeddedDetailedScan:
+    type: object
+    properties:
+      scans:
+        type: array
+        items:
+          $ref: '#/definitions/DetailedScan'
+  EmbeddedPlatformApplication:
+    type: object
+    properties:
+      platform_applications:
+        type: array
+        items:
+          $ref: '#/definitions/PlatformApplication'
+  EmbeddedCode:
+    type: object
+    properties:
+      codes:
+        type: array
+        items:
+          $ref: '#/definitions/Code'
+  Errors:
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/ServiceError'
+  AutoAuthentication:
+    description: >
+      Details of the auto-login authentication. You can combine auto-login authentication with basic authentication.
+      It does not require users to provide login or logout scripts.
+    type: object
+    properties:
+      authtype:
+        type: string
+        description: The type of authentication. Only the value AUTO is expected.
+      authentication_id:
+        type: string
+        description: Unique authentication identifier.
+      username:
+        type: string
+        description: The username to use.
+      password:
+        type: string
+        description: The password to use.
+  BasicAuthentication:
+    description: >
+      Details of the basic authentication.
+    type: object
+    properties:
+      authtype:
+        type: string
+        description: The type of authentication. Only the value BASIC is expected.
+      authentication_id:
+        type: string
+        description: Unique record identifier.
+      username:
+        type: string
+        description: The username to use.
+      password:
+        type: string
+        description: The password to use.
+      domain:
+        type: string
+        description: The domain to use.
+  ClientCertAuthentication:
+    description: >
+      Details of client certificate-based authentication.
+    type: object
+    properties:
+      authtype:
+        type: string
+        description: The type of authentication. Only the value CERT is expected.
+      authentication_id:
+        type: string
+        description: Unique record identifier.
+      password:
+        type: string
+        description: The password to use.
+      cert:
+        type: string
+        description: The encoded, base64 certificate.
+  CrawlConfiguration:
+    type: object
+    properties:
+      disabled:
+        type: boolean
+        example: false
+        description: 'If true, the automated crawler is disabled.'
+      scripts:
+        type: array
+        description: 'List of optional, valid script identifiers.'
+        items:
+          $ref: '#/definitions/CrawlScript'
+    description: The crawl script configuration for a URL scan.
+  CrawlScript:
+    type: object
+    properties:
+      crawl_script_data:
+        $ref: '#/definitions/Script'
+      crawl_script_id:
+        type: string
+        description: Unique script locator. Absent when not persisted.
+      number_scripts:
+        type: integer
+        format: int64
+        description: Number of crawl scripts. Present only in response, ignored in request.
+    description: >
+      A crawl script. Crawl scripts are application-specific and independently maintained. A number of them can be recorded 
+      and maintained for an application. One or more of them can be included in any application configuration for use during 
+      scanning.
+  FormAuthentication:
+    description: >
+      Details of form-based authentication. Form-based authentication that has at least a verification or logout detection 
+      capability.
+    type: object
+    properties:
+      authtype:
+        type: string
+        description: The type of authentication. Only the value FORM is expected.
+      authentication_id:
+        type: string
+        description: Unique identifier locator.
+      login_script_data:
+        description: The login script.
+        $ref: '#/definitions/Script'
+      logout_script_data:
+        description: The logout script, which is required if advanced mode scanning is configured.
+        $ref: '#/definitions/Script'
+      verification:
+        description: The verification to use, which is not required if advanced mode scanning is configured.
+        $ref: '#/definitions/LoginVerification'
+      logout_detection:
+        description: The type of logout detection to use. If verification is already specified, this is ignored. It is not required if advanced mode scanning is configured.
+        $ref: '#/definitions/LogoutDetection'
+  InternalScanConfiguration:
+    description: Internal scan configuration settings.
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        description: Set to true after you have configured an ISM scan.
+      endpoint_id:
+        type: string
+        description: The endpoint Identifier.
+      gateway_id:
+        type: string
+        description: The gateway identifer.
+  Link:
+    description: A HATEOAS link.
+    type: object
+    properties:
+      href:
+        type: string
+      rel:
+        type: string
+      templated:
+        type: boolean
+  LinkedAppInfo:
+    description: Additional information related to a linked application.
+    type: object
+    properties:
+      analysis_unit_id:
+        type: string
+        description: Identifier for the Dynamic Analysis.
+      app_ver_id:
+        type: string
+        description: Identifier for version of linked application. 
+      result_import_request_status:
+        type: string
+        description: Status of the results import request.
+  ListedCode:
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/EmbeddedCode'
+  LoginVerification:
+    description: Login verification settings, providing the information Veracode needs to verify it is logged in.
+    type: object
+    properties:
+      verification_pattern:
+        type: string
+        description: Verification pattern. Can be a regular expression.
+      verification_url:
+        type: string
+        description: Verification URL
+  LogoutDetection:
+    description: Logout detection settings, providing the information Veracode needs to check if it is logged out by looking for a pattern.
+    type: object
+    properties:
+      detection_pattern:
+        type: string
+        description: Detection pattern. Can be a regular expression.
+  OrgInformation:
+    description: Organization information related to the Dynamic Analysis.
+    type: object
+    properties:
+      business_unit_id:
+        type: string
+        description: The identifier of the business unit associated with the Dynamic Analysis. 
+      email:
+        type: string
+        description: Contact email information where notifications related to Dynamic Analysis are sent.
+      owner:
+        type: string
+        description: Optional name of the person responsible for the Dynamic Analysis.
+  PageMeta:
+    description: Information related to the current page of results returned.
+    type: object
+    properties:
+      number:
+        type: integer
+        format: int32
+        description: Current page number.
+      size:
+        type: integer
+        format: int32
+        description: Size of the current page.
+      total_elements:
+        type: integer
+        format: int64
+        description: Total number of records in the results.
+      total_pages:
+        type: integer
+        format: int32
+        description: Total number of pages in the results. 
+  PagedAnalysisOccurrence:
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/EmbeddedAnalysisOccurrence'
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMeta'
+  PagedAnalysisSummary:
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/EmbeddedAnalysisSummary'
+      capabilities:
+        type: array
+        items:
+          type: string
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMeta'
+  PagedAuditData:
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/EmbeddedAuditData'
+      capabilities:
+        type: array
+        items:
+          type: string
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMeta'
+  PagedDetailedScanOccurrence:
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/EmbeddedDetailedScanOccurrence'
+      capabilities:
+        description: Capabilities, nullable.
+        type: array
+        items:
+          type: string
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMeta'
+  PagedDetailedScan:
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/EmbeddedDetailedScan'
+      capabilities:
+        type: array
+        items:
+          type: string
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMeta'
+  PagedPlatformApplication:
+    type: object
+    properties:
+      _embedded:
+        $ref: '#/definitions/EmbeddedPlatformApplication'
+      capabilities:
+        type: array
+        items:
+          type: string
+      _links:
+        type: array
+        items:
+          $ref: '#/definitions/Link'
+      page:
+        $ref: '#/definitions/PageMeta'
+  PlatformApplication:
+    description: Information about the associated Veracode Platform application.  
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+        description: Identifier of the Veracode Platform application.
+      linked_scan_target_url:
+        type: string
+        description: Target URL of the scan linked to the Veracode Platform application. If not present, this application is not linked to a URL scan.
+      name:
+        type: string
+        description: Veracode Platform application name.
+      uuid:
+        type: string
+        description: Veracode Platform application UUID.   
+  ScanBlackoutSchedule:
+    description: The schedule for the blackout period within the normal schedule when no scanning should take place.
+    type: object
+    properties:
+      blackout_days:
+        type: string
+        description: The comma-separated list of days within the blackout period. For example, TUESDAY, THURSDAY.
+      blackout_end_time:
+        type: string
+        description: Indicates the end time of a blackout period in HH:MM format.
+      blackout_start_time:
+        type: string
+        description: Indicates the start time of a blackout period in HH:MM format.
+      blackout_type:
+        type: string
+        description: Indicates the blackout window schedule type.
+        enum:
+          - THESE_HOURS
+          - THESE_DAYS
+          - WEEKDAYS
+          - WEEKEND
+  ScanCapacitySummary:
+    type: object
+    properties:
+      max_scan_capacity:
+        type: integer
+        format: int32
+        description: Maximum number of concurrent URL scan occurrences allowed for this account based on current license status.
+      throttled_analyses_occurrence_count:
+        type: integer
+        format: int32
+        description: Number of Dynamic Analysis occurrences that are throttled because one or more URL scan occurrences within a Dynamic Analysis are throttled.
+      org:
+        type: string
+    description: The summary of the URL scan capacity and status for an account.
+  ScanConfiguration:
+    description: >
+      The configuration for a URL scan.
+    type: object
+    properties:
+      target_url:
+        description: Target URL for the scan with rules, such as a scan of both HTTP and HTTPS protocols or the restriction of the URL scan to a specific directory type.
+        $ref: '#/definitions/ScanURL'
+      allowed_hosts:
+        type: array
+        description: Additional allowed hosts for the URL scan with rules, such as a scan of both HTTP and HTTPS protocols or the restriction of the URL scan to a specific directory type.
+        items:
+          $ref: '#/definitions/ScanURL'
+      auth_configuration:
+        description: Authentication configuration for the URL scan.
+        $ref: '#/definitions/AuthenticationConfiguration'
+      crawl_configuration:
+        description: Crawl configuration for the URL scan.
+        $ref: '#/definitions/CrawlConfiguration'
+      scan_setting:
+        description: >
+          Settings for the URL scan. You do not have to specify all the settings. Any settings you do specificy at the 
+          URL scan configuration level override or add to the Dynamic Analysis configuration level.
+        $ref: '#/definitions/ScanSetting'
+      capabilities:
+        type: array
+        items:
+          type: string
+  ScanConfigurationRequest:
+    description: >
+      The scan configuration request for a URL scan.
+    type: object
+    properties:
+      allowed_hosts:
+        type: array
+        description: Additional allowed hosts for the URL scan with rules, such as a scan of both HTTP and HTTPS protocols or the restriction of the URL scan to a specific directory type.
+        items:
+          $ref: '#/definitions/ScanURL'
+      auth_configuration:
+        description: Authentication configuration for the URL scan.
+        $ref: '#/definitions/AuthenticationConfiguration'
+      crawl_configuration:
+        description: Crawl configuration for the URL scan.
+        $ref: '#/definitions/CrawlConfiguration'
+      scan_setting:
+        description: URL scan setting. Not mandatory and not everything must be specified.
+        $ref: '#/definitions/ScanSetting'
+      target_url:
+        description: Target URL for the scan with rules such as a scan of both HTTP and HTTPS protocols or the restriction of the URL scan to a specific directory type.
+        $ref: '#/definitions/ScanURL'
+  ScanDuration:
+    description: How long a URL scan should run.
+    type: object
+    properties:
+      length:
+        type: integer
+        format: int32
+        description: >
+          The maximum time the URL scan can run. If the value is zero or less, you must specify the end date in the URL scan schedule.
+      unit:
+        type: string
+        description: Unit of duration.
+        enum:
+          - DAY
+          - HOUR
+          - MINUTE
+  ScanOccurrenceStatus:
+    type: object
+    properties:
+      status_type:
+        type: string
+        description: The URL scan occurrence status type code.
+        enum:
+          - SCHEDULED
+          - SUBMITTED
+          - SUBMIT_FAILED
+          - VERIFICATION_FAILED
+          - QUEUED
+          - QUEUED_WITH_WARNING
+          - IN_PROGRESS
+          - IN_PROGRESS_WITH_WARNING
+          - PAUSING
+          - PAUSED
+          - RESUMING
+          - STOPPING_SAVING_RESULT
+          - STOPPING_DELETING_RESULT
+          - STOPPED
+          - STOPPED_TIME
+          - STOPPED_TIME_VERIFYING_RESULTS
+          - STOPPED_TECHNICAL_ISSUE
+          - STOPPED_VERIFYING_RESULTS_BY_USER
+          - STOPPED_VERIFYING_RESULTS
+          - FINISHED_VERIFYING_RESULTS
+          - FINISHED_RESULTS_AVAILABLE
+    description: The URL scan occurrence status.
+  ScanOccurrenceRuntimeSummary:
+    description: A summary of the current state of a URL scan occurrence.
+    type: object
+    properties:
+      bytes_received:
+        type: integer
+        format: int64
+        description: The number of bytes received, nullable.
+      bytes_sent:
+        type: integer
+        format: int64
+        description: The number of bytes sent, nullable.
+      completed:
+        type: boolean
+        example: false
+        description: Returns true if the URL scan occurrence is complete.
+      duration:
+        type: integer
+        format: int64
+        description: The UTC elapsed runtime of the job, in milliseconds, nullable.
+      end:
+        type: string
+        description: The end time of the job, ISO-8601-format date and time, nullable.
+      exit_status:
+        type: string
+        description: The exit status of the job, nullable.
+      links_audited:
+        type: integer
+        format: int64
+        description: The number of links auditted, nullable.
+      links_crawled:
+        type: integer
+        format: int64
+        description: The number of links crawled, nullable.
+      login_failures:
+        type: integer
+        format: int64
+        description: The total number of failed logins, nullable.
+      login_successes:
+        type: integer
+        format: int64
+        description: The total number of successful logins, nullable.
+      network_errors:
+        type: integer
+        format: int64
+        description: The total number of network errors encountered, nullable.
+      port_shutdowns:
+        type: integer
+        format: int64
+        description: The number of port shutdowns encountered, nullable.
+      requests:
+        type: integer
+        format: int64
+        description: The total number of requests, nullable.
+      responses:
+        type: integer
+        format: int64
+        description: The total number of responses received, nullable.
+      start:
+        type: string
+        description: The start time of the job, ISO-8601-format date and time, nullable.
+  ScanRecurrenceSchedule:
+    type: object
+    properties:
+      day_of_week:
+        type: string
+        description: The day of the week.
+        enum:
+          - MONDAY
+          - TUESDAY
+          - WEDNESDAY
+          - THURSDAY
+          - FRIDAY
+          - SATURDAY
+          - SUNDAY
+      recurrence_interval:
+        type: integer
+        format: int32
+        description: The time between two recurrences of a URL scan.
+      recurrence_type:
+        type: string
+        description: The URL scan recurrence schedule type.
+        enum:
+          - MONTHLY
+          - WEEKLY
+      schedule_end_after:
+        type: integer
+        format: int32
+        description: The end of the recurrence schedule.
+      week_of_month:
+        type: string
+        description: The week of the month.
+        enum:
+          - FIRST
+          - SECOND
+          - THIRD
+          - FOURTH
+          - LAST
+    description: The URL scan recurrence schedule model.
+  ScanRequest:
+    description: >
+      A request to create or update a URL scan.
+    type: object
+    properties:
+      action_type:
+        type: string
+        description: Optional action type for when bulk scan requests are being modified for a single Dynamic Analysis.
+        enum:
+          - ADD
+          - UPDATE_SELECTIVE
+          - UPDATE_CLOBBER
+          - REMOVE
+      scan_id:
+        description: Unique identifier of the URL scan. Only necessary for updates.
+        type: string
+      scan_contact_info:
+        $ref: '#/definitions/ContactInformation'
+      scan_config_request:
+        $ref: '#/definitions/ScanConfigurationRequest'
+      linked_platform_app_uuid:
+        description: UUID of the Veracode Platform application to which this URL scan should link. Optional.
+        type: string
+      internal_scan_configuration:
+        $ref: '#/definitions/InternalScanConfiguration'
+  ScanSchedule:
+    type: object
+    properties:
+      duration:
+        description: Duration of the URL scan.
+        $ref: '#/definitions/ScanDuration'
+      effective_end_date:
+        description: Present only in responses. The effective end date in ISO-8601 format of the URL scan as calculated from the specified schedule.
+        type: string
+      effective_start_date:
+        description: Present only in responses. The effective start date in ISO-8601 format of the URL scan as calculated from the specified schedule.
+        type: string
+      end_date:
+        type: string
+        description: >
+          If the URL scan duration is zero or less, you must specify the end date as a date and time in future, 
+          and it must be later than the startDate. Must be in ISO-8601 format, for example: 2016-12-03T10:15+01:00. 
+          You can include seconds and milliseconds but are ignored.
+      now:
+        type: boolean
+        description: Indicates that the URL scan should start as soon as possible.
+      scan_blackout_schedule:
+        description: URL scan blackout configuration to schedule auto-pause and resume.
+        $ref: '#/definitions/ScanBlackoutSchedule'
+      scan_recurrence_schedule:
+        description: URL scan recurrence configuration to schedule batch scans on a recurring basis.
+        $ref: '#/definitions/ScanRecurrenceSchedule'
+      schedule_status:
+        type: string
+        description: The status of the current schedule, whether active, completed, or canceled.
+        enum:
+          - ACTIVE
+          - CANCELED
+          - COMPLETED
+      start_date:
+        type: string
+        description: >
+          The date and time the URL scan should start. Must be in ISO-8601 format, for example:  2016-12-03T10:15+01:00.
+          You can include seconds and milliseconds but they are ignored. If now is set to true, this value is calcuated 
+          as the current time, unless already specified.
+    description: A URL scan schedule.
+  ScanSetting:
+    description: >
+      The basic URL scan setting. Contains everything except URL-specific details such as target URL, authentication, etc. 
+      You can specify the ScanSetting at multiple points: the URL scan, Dynamic Analysis, Account, and System levels. The 
+      final ScanSetting of a URL scan is determined by combining the aspects of the ScanSetting from all different context.
+    type: object
+    properties:
+      blacklist_configuration:
+        description: The blacklist configuration for the URL scan, including rules to exclude specific URLs during the URL scan.
+        $ref: '#/definitions/BlacklistConfiguration'
+      advanced_mode:
+        type: boolean
+        description: True, if advanced mode is enabled.
+      user_agent:
+        description: The user agent header to use for scanning. This is the header string that is attached to all requests made to the target site.
+        $ref: '#/definitions/UserAgent'
+  ScanURL:
+    description: The URL to scan. It contains additional details on how the scan should handle the URL.
+    type: object
+    properties:
+      directory_restriction_type:
+        type: string
+        example: DIRECTORY_AND_SUBDIRECTORY
+        description: Directories to which you want to restrict the scope during scanning. The default is DIRECTORY AND SUBDIRECTORY.
+        enum:
+          - DIRECTORY_AND_SUBDIRECTORY
+          - FOLDER_ONLY
+          - FILE
+          - NONE
+      http_and_https:
+        type: boolean
+        example: true
+        description: If true, both HTTP and HTTPS protocols apply even if the base URL is only one of those. The default is true.
+      url:
+        type: string
+        description: The valid base URL.
+  ScanVerification:
+    type: object
+    properties:
+      error_codes:
+        type: array
+        description: List of error codes, which only appear if verification was not successful.
+        items:
+          type: string
+      success:
+        type: boolean
+        example: false
+        description: If true, this value indicates that verification was successful.
+      verification_type:
+        type: string
+        enum:
+          - CONNECTION
+          - AUTHENTICATION
+  Script:
+    type: object
+    properties:
+      script_body:
+        type: string
+        description: The body of the script, up to 20 MB.
+      script_type:
+        type: string
+        description: >
+          The type of script. Selenium is the only supported format. Both JSON and HTML-formatted Selenium scripts are 
+          supported. However, not all commands may be supported. A validation error is reported if an unsupported 
+          command is used.
+        enum:
+          - SELENIUM
+    description: A script.
+  ServiceError:
+    description: An error related to an API call.
+    type: object
+    properties:
+      code:
+        description: The coded enum of the error.
+        type: string
+        enum:
+          - INVALID_ANALYSIS_IDENTIFIER
+          - INVALID_ANALYSIS_STATE
+          - NAME_ERROR
+          - INVALID_NUMBER_OF_SCANS
+          - INVALID_SCHEDULE
+          - INVALID_BATCH_SETTING
+          - SCAN_VALIDATION_ERROR
+          - INVALID_ACTION_TYPE
+          - SCAN_IDENTIFIER_NOT_SPECIFIED
+          - INVALID_SCAN_IDENTIFIER
+          - SCAN_IN_USE
+          - INVALID_APPLICATION_REQUEST
+          - INVALID_SCAN_CONFIGURATION_REQUEST
+          - SCAN_LOCKED
+          - GATEWAY_IDENTIFIER_NOT_SPECIFIED
+          - ENDPOINT_IDENTIFIER_NOT_SPECIFIED
+          - INVALID_GATEWAY_OR_ENDPOINT_IDENTIFIER
+          - FAILED_TO_VALIDATE_INTERNAL_SCAN_CONFIGURATION
+          - APP_LINK_ERROR
+          - INVALID_APPLICATION_IDENTIFIER
+          - NAME_NOT_SPECIFIED
+          - NAME_NOT_UNIQUE
+          - NAME_INVALID_LENGTH
+          - APPLICATION_ID_NOT_SPECIFIED
+          - INVALID_APPLICATION_ID
+          - SCAN_NOT_LINKED_TO_AN_APP
+          - RESULT_IMPORT_INPROGRESS_FOR_SCAN
+          - APPLICATION_NOT_FOUND
+          - ACCESS_DENIED_FOR_APPLICATION
+          - UNEXPECTED_RESPONSE_ON_RETRIEVE_APP
+          - UNEXPECTED_RESPONSE_ON_RETRIEVE_APPS
+          - DUPLICATE_LINK_APP_ID_IN_SAME_ANALYSIS
+          - MISSING_SCAN_CONFIGURATION
+          - INVALID_SCAN_CONFIGURATION_IDENTIFIER
+          - INVALID_TARGET_URL
+          - DUPLICATE_SCAN_CONFIGURATION
+          - INVALID_AUTH_SETTING
+          - INVALID_CRAWL_SETTING
+          - INVALID_SCAN_SETTING
+          - INVALID_INCLUSION_LIST
+          - START_DATE_NOT_SPECIFIED
+          - MISSING_DURATION
+          - WRONG_DURATION
+          - ENDS_IN_PAST
+          - END_DATE_BEFORE_START_DATE
+          - TOO_FAR_IN_FUTURE
+          - INVALID_START_DATE
+          - INVALID_NUMBER_OF_INTERVALS_FOR_RECURRING_SCANS
+          - INVALID_NUMBER_OF_EVENTS_FOR_RECURRING_SCANS
+          - RECURRING_SCAN_STARTS_DURING_INITIAL_SCAN
+          - INVALID_DURATION_FOR_SCAN_RECURRENCE
+          - INVALID_SCHEDULE_END_FOR_RECURRING_SCHEDULE
+          - INVALID_CONFIGURATION_FOR_WEEKLY_RECURRING_SCHEDULE
+          - INVALID_RECURRENCE_TYPE
+          - INVALID_BLACKOUT_TYPE
+          - BLACKOUT_DAYS_NOT_SPECIFIED
+          - INVALID_START_TIME_FOR_BLACKOUT_SCHEDULE
+          - INVALID_END_TIME_FOR_BLACKOUT_SCHEDULE
+          - TOO_SHORT_BLACKOUT_THESE_HOURS_DURATION
+          - TOO_LONG_BLACKOUT_THESE_HOURS_DURATION
+          - INVALID_BLACKOUT_DAYS_FOR_THESE_DAYS_SCHEDULE
+          - SCAN_CANNOT_START_INSIDE_BLACKOUT_PERIOD
+          - ONE_OF_THE_RECURRING_SCANS_IS_INSIDE_BLACKOUT_PERIOD
+          - TOO_SHORT_SCAN_DURATION_FOR_AUTO_PAUSE_RESUME
+          - NOT_ENOUGH_DURATION_TO_CREATE_OCCURRENCE
+          - ANALYSIS_OCCURRENCE_IS_ACTIVE_FOR_ANALYSIS
+          - ANOTHER_VERIFICATION_OCCURRENCE_IS_ACTIVE_FOR_ANALYSIS
+          - INVALID_MAX_LINKS
+          - INVALID_RESPONSE_TIMEOUT
+          - INVALID_EXCLUSION_LIST
+          - INVALIDATED_SAVED_SCANS
+          - MISSING_TARGET_URL
+          - MALFORMED_URL
+          - IPV6_NOT_SUPPORTED
+          - INAPPROPRIATE_PROTOCOL
+          - USERINFO_DETECTED_IN_URL
+          - OUT_OF_SCOPE_TARGET_URL
+          - EXCLUDED_TARGET_URL
+          - LOCALHOST_URL
+          - PRIVATE_IP_URL
+          - TOO_SHORT_SCAN_WINDOW
+          - TOO_SHORT_VERIFICATION_WINDOW
+          - INVALID_SCAN_STATUS
+          - INVALID_ANALYSIS_STATUS
+          - OCCURRENCE_NOT_READY
+          - LICENSE_NOT_FOUND_FOR_ORGID
+          - ACCESS_DENIED_FOR_ORG
+          - UNEXPECTED_RESPONSE_ON_RETRIEVE_LICENSE
+          - EXCLUDED_INCLUSION_URL
+          - INVALID_AUTH_IDENTIFIER
+          - MISSING_USERNAME
+          - INVALID_USERNAME_LENGTH
+          - MISSING_PASSWORD
+          - INVALID_PASSWORD_LENGTH
+          - INVALID_DOMAIN_LENGTH
+          - MISSING_SELENIUM_SCRIPT
+          - INVALID_SELENIUM_SCRIPT_LENGTH
+          - INVALID_SELENIUM_SCRIPT_CONTENT
+          - UNSUPPORTED_SCRIPT_TYPE
+          - MORE_THAN_ONE_SCRIPT
+          - UNSUPPORTED_SCRIPT_FEATURES
+          - NO_SCRIPT
+          - MISSING_SCRIPT_FEATURES
+          - MISSING_SELENIUM_VERIFICATION_URL_OR_PATTERN
+          - INVALID_VERIFICATION_URL
+          - MISSING_VERIFICATION_AND_LOGOUTDETECTION
+          - INVALID_LOGOUT_DETECTION_PATTERN_LENGTH
+          - INVALID_VERIFICATION_URL_LENGTH
+          - INVALID_VERIFICATION_PATTERN_LENGTH
+          - ANALYSIS_OCCURRENCE_REQUEST_ERROR
+          - SERVICE_ACCESS_ERROR
+          - EMPTY_FILE_CONTENT
+          - RESOURCE_DELETED
+          - INVALID_ID
+          - INVALID_CONTACT_INFO
+          - INVALID_BUSINESS_OWNER
+          - INVALID_INPUT
+          - INVALID_USERNAME
+          - INVALID_CUSTOM_USER_AGENT
+          - INVALID_DOMAIN
+          - INVALID_VERIFICATION_TEXT
+      id:
+        description: The unique identifier of the error. This value indicates that the error was logged on the service and you can use it to troubleshoot.
+        type: string
+      meta:
+        description: Additional information regarding the error.
+        type: object
+      source:
+        description: The location where the error originates if this error is related to an API parameter.
+        $ref: '#/definitions/Source'
+      status:
+        description: >
+          'String value of the HTTP status that best represents the error, for example: 404.'
+        type: string
+  Source:
+    description: A source of API parameter.
+    type: object
+    properties:
+      parameter:
+        description: A request parameter name.
+        type: string
+      pointer:
+        description: If a request body is being sent, this is the JSON pointer to a parameter.
+        type: string
+  UserAgent:
+    type: object
+    properties:
+      custom_header:
+        type: string
+        description: The custom header to use. You must specify this if the user agent type is custom. Otherwise, you can override the default value for the type.
+      type:
+        type: string
+        description: User agent type.
+        enum:
+          - DEFAULT
+          - FIREFOX_21
+          - CHROME
+          - SAFARI
+          - INTERNET_EXPLORER_9
+          - INTERNET_EXPLORER_7
+          - INTERNET_EXPLORER_6
+          - IPHONE
+          - BLACKBERRY
+          - NOKIA_6600
+          - SONY_ERICSSON_K700_I
+          - GENERIC_ANDROID_TABLET
+          - CUSTOM
+          - CHROME_55
+          - SAFARI_10
+          - INTERNET_EXPLORER_11
+          - MICROSOFT_EDGE
+          - FIREFOX_50
+          - CHROME_MOBILE
+          - FIREFOX_MOBILE
+          - MICROSOFT_EDGE_MOBILE
+    description: Represents user agent details.
+  VerificationReport:
+    description: A report containing data on all verifications performed.
+    type: object
+    properties:
+      verifications:
+        type: array
+        description: A list of verifications.
+        items:
+          $ref: '#/definitions/VerificationData'
+  VerificationData:
+    description: >
+      Represents verification result. Is abstract. Extended types represent actual verifications. Extended types
+      currently supported are ConnectionVerificationData and AuthenticationVerificationData.
+    type: object
+    discriminator: verification_type
+    required:
+        - verification_type
+    properties:
+      outcome:
+        type: string
+        description: Outcome of the verification.
+        enum:
+          - SUCCESS
+          - FAILED
+          - WARNING
+      code:
+        type: string
+        description: Specific to the type of verification.
+      verification_type:
+        type: string
+        description: Type of verification data.
+        enum:
+        - AUTHENTICATION_CONFIGURATION
+        - CONNECTION
+  ConnectionVerificationData:
+    allOf:
+    - $ref: '#/definitions/VerificationData'
+    description: >
+      The results of the connection verification.
+    type: object
+    properties:
+      url_type:
+        type: string
+        description: The context of the URL. Currently, Veracode only verifies the target URL, therefore the only value is TARGET_URL.
+      url:
+        type: string
+        description: The URL being verified.
+      resolved_ip_address:
+        type: string
+        description: IP address for the URL as resolved by the dynamic scanner.
+      browser_used:
+        type: boolean
+        description: >
+          If true, a browser was used to verify the existence and accessibility of the URL. If false, the URL was
+          accessed directly from the scanner.
+      attempts:
+        type: array
+        description: >
+          Details on each attempt made to verify. For a direct request sent by scanner this will likely have only one
+          entry. if the request is made from a browser it will capture all requests made to load the page.
+        items:
+          $ref: '#/definitions/ConnectionAttemptData'
+  ConnectionAttemptData:
+    description: >
+      Data related to a connection attempt made for a remote URL.
+    type: object
+    properties:
+      time_initiated:
+        type: number
+        description: The UTC time in milliseconds when the connection attempt was initiated.
+      response_time:
+        type: number
+        description: The UTC elapsed time for the completion of the request, in milliseconds, nullable.
+      scope:
+        type: string
+        description: The scopr of the request as evaluated by the scanner based on target URL, whitelist and blacklist.
+        enum:
+          - WHITE
+          - GRAY
+          - BLACK
+      request:
+        description: >
+          Details of the HTTP Request that was sent.
+        $ref: '#/definitions/HttpRequestData'
+      response:
+        description: >
+          Details of the HTTP Request that was sent.
+        $ref: '#/definitions/HttpResponseData'
+  HttpRequestData:
+    description: >
+      Data related to a HTTP request made by scanner.
+    type: object
+    properties:
+      method:
+        type: string
+        description: Value of the HTTP method header.
+      uri:
+        type: string
+        description: URI the request was sent to.
+      host:
+        type: string
+        description: The host the request was sent to.
+      port:
+        type: string
+        description: String representation of the port number the request was sent to. 
+      path:
+        type: string
+        description: Path the request was sent to.
+      raw_request:
+        type: string
+        description: The raw request bytes in the request, encoded in base64.
+  HttpResponseData:
+    description: >
+      Data related to a HTTP response received by scanner.
+    type: object
+    properties:
+      response_code:
+        type: string
+        description: HTTP Response code.
+      redirect_url:
+        type: string
+        description: If the response code was one of 3xx, the redirect URL specified in response.
+      response_truncated:
+        type: boolean
+        description: >
+          If the response is too large, it will be trucated in the raw_response field below. The value of this
+          field will be true in that case.
+      malformed:
+        type: boolean
+        description: If true, the response was determined as malformed, e.g. not adhering to HTTP standards.
+      raw_response:
+        type: string
+        description: The raw response bytes in the response, encoded in base64. The string may become truncated if it is too long.
+  AuthenticationVerificationData:
+    allOf:
+    - $ref: '#/definitions/VerificationData'
+    description: >
+      The results of the authentication verification.
+    type: object
+    properties:
+      auth_id:
+        type: string
+        description: Identifier of the authentication configuration.
+      failure:
+        description: If this is a failure in form authentication, provides more detailed data on the failure.
+        $ref: '#/definitions/AuthenticationScriptFailureData'
+  AuthenticationScriptFailureData:
+    description: >
+      Represents failure data releated to a failed script execution.
+    type: object
+    properties:
+      failure_type:
+        type: string
+        description: Depends on the type of script. Currently this value will return a constant - SELENIUM_SCRIPT_FAILURE_DATA.
+      script_type:
+        type: string
+        description: The type of script. Currently this value will return a constant - SELENIUM.
+      script_failure:
+        description: Details of the script failure. 
+        $ref: '#/definitions/ScriptFailureData'
+  ScriptFailureData:
+    description: >
+      Detailed information on the failure to run a script.
+    type: object
+    properties:
+      script_id:
+        type: string
+        description: Identitifer of the script that failed.
+      failed_commands:
+        type: array
+        description: >
+          Listing of all failed commands. Usually contains only one - the first one where error was encountered.
+        items:
+          $ref: '#/definitions/SeleniumCommandFailureData'
+  SeleniumCommandFailureData:
+    description: >
+      Detailed information on the failure to run a selenium command.
+    type: object
+    properties:
+      failed_command_id:
+        type: string
+        description: Identitifer of the command that failed.
+      failed_command:
+        description: The original command that failed.
+        $ref: '#/definitions/SeleniumCommandInfo'
+  SeleniumCommandInfo:
+    description: >
+      Details of a Selenium Command.
+    type: object
+    properties:
+      id:
+        type: string
+        description: Identifier of the command.     
+      name:
+        type: string
+        description: Name of the command.
+      target:
+        type: string
+        description: The target HTML element of the command.
+      value:
+        type: string
+        description: The value to set for the target. Nullable.
+      targets:
+        type: array
+        description: Additional targets for the HTML element.
+        items:
+          $ref: '#/definitions/TargetListData'
+  TargetListData:
+    description: >
+      Additional targets to locate the HTML element to execute a Selenium Command against.
+    type: object
+    properties:
+      targets:
+        type: array
+        description: Set of target locators. Usually something like XPath, CSS Locator etc.
+        items:
+          type: string
+  VisibilitySetup:
+    description: The visibility rules for a Dynamic Analysis that determine who can access the analysis.
+    type: object
+    properties:
+      setup_type:
+        type: string
+        description: Who visibility is limited to.
+        enum:
+          - SEC_LEADS_ONLY
+          - SEC_LEADS_AND_TEAM
+      team_identifiers:
+        type: array
+        description: The names of the teams that have access to the Dynamic Analysis.
+        items:
+          type: string
