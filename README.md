@@ -34,7 +34,8 @@ https://www.example.com/app/index.html,True,DIRECTORY_AND_SUBDIRECTORY,userlogin
 https://www.example.com/admin/index.html,True,DIRECTORY_AND_SUBDIRECTORY,adminlogin.side
 
 $ cd restapi
- ./DynamicAnalysis.py -h
+
+$ ./DynamicAnalysis.py -h
 usage: DynamicAnalysis.py [-h] [--name NAME] [--start START_DATE]
                           [--team TEAMID] [--csvfile TEAMID]
 
