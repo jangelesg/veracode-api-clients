@@ -30,22 +30,22 @@ veracode_api_key_secret = <YOUR_API_KEY_SECRET>
 
 ### Run Dynamic Analysis Scan
 $ vi data/dynscan1.csv
-url,http_and_https,directory_restriction_type,script_file
-https://www.example.com/app/index.html,True,DIRECTORY_AND_SUBDIRECTORY,userlogin.side
-https://www.example.com/admin/index.html,True,DIRECTORY_AND_SUBDIRECTORY,adminlogin.side
+URL,LOGIN_SCRIPT,CRAWL_SCRIPT
+https://www.example.com/app/index.html,userlogin.side,
+https://www.example.com/admin/index.html,adminlogin.side,
 
 $ cd restapi
 
 $ ./DynamicAnalysis.py -h
 usage: DynamicAnalysis.py [-h] [--name NAME] [--start START_DATE]
-                          [--team TEAMID] [--csvfile TEAMID]
+                          [--team TEAMID] [--csvfile CSVFILE]
 
 optional arguments:
   -h, --help          show this help message and exit
   --name NAME         Scan Name.
   --start START_DATE  Start Date for scan.
   --team TEAMID       Team ID. Default: none.
-  --csvfile TEAMID    CSV file name. Default: "../data/dynscan1.csv"
+  --csvfile CSVFILE   CSV file name. Default: "../data/dynscan1.csv"
 
 $ ./DynamicAnalysis.py
 
