@@ -3,9 +3,38 @@
 ## Overview
 
 -   Simple project with bash and python scripts calling the Veracode XML and REST APIs
--   Python scripts use the [Veracode REST API](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/TNCmFBcyE6F902_fr9Qz0g). The main one is [DynamicAnalysis.py](./restapi/DynamicAnalysis.py) that allows the use of new Veracode functionality that's not even covered by the Veracode Web UI (using crawl scripts) or the existing wrappers used for CI/CD -- AFAIK, the [Veracode API Wrappers](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/Ib32zUpRx3cEwdR3duvUdg) still doesn't support REST APIs.
+-   Python scripts use the [Veracode REST API](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/TNCmFBcyE6F902_fr9Qz0g). The main one is [DynamicAnalysis.py](./restapi/DynamicAnalysis.py) that allows the use of new Veracode functionality that's not even covered by the Veracode Web UI (using crawl scripts) or the existing wrappers used for CI/CD -- AFAIK, the [Veracode API Wrappers](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/Ib32zUpRx3cEwdR3duvUdg) still don't support the (newer) REST API.
 -   Bash scripts use the [Veracode XML API](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/SdntedDhtLGc_zmxQ339OA). XML response parsing uses xsltproc.
 -   The included Dockerfile helps ensure the proper execution environment (getting all OS and python dependencies, configuring the python3 virtual environment...).
+
+### CSV File used by Dynamic Analysis
+
+When using the DynamicAnalysis.py script in this format:
+
+```bash
+$ cd restapi
+$ ./DynamicAnalysis.py --action create --name SCAN_NAME --csvfile CSV_FILENAME
+```
+
+The CSV file can include these values:
+
+| FIELD                  | DESCRIPTION                                                |
+| ---------------------- | ---------------------------------------------------------- |
+| url (\*)               | URL to be scanned                                          |
+| app_uuid (\*\*)        | UUID of Veracode App to link the scan to                   |
+| base_path              | Base path for files (see next "\_file" fields)             |
+| login_script_file      | File name for the login script (under base_path)           |
+| logout_script_file     | File name for the logout script (under base_path)          |
+| crawl_script_file      | File name for the crawl script (under base_path)           |
+| allowed_hosts_file     | File name for additional allowed hosts/URLs (one per line) |
+| blacklist_file         | File name for blacklisted hosts/URLs (one per line)        |
+| ism_endpoint_id (\*\*) | ID for specific ISM endpoint/server to use                 |
+| ism_gateway_id (\*\*)  | ID for ISM gateway                                         |
+
+-   (\*) Mandatory field
+-   (\*\*) To obtain those IDs, you can use `DynamicAnalysis.py --action export --name NAME`
+
+See this [sample CSV file](sample_data/dynscan-dvna.csv) for an example.
 
 ## Example Usage
 
