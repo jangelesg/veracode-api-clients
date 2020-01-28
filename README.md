@@ -7,7 +7,9 @@
 -   Bash scripts use the [Veracode XML API](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/SdntedDhtLGc_zmxQ339OA). XML response parsing uses xsltproc.
 -   The included Dockerfile helps ensure the proper execution environment (getting all OS and python dependencies, configuring the python3 virtual environment...).
 
-### CSV File used by Dynamic Analysis
+## Technical Details
+
+### CSV File used by DynamicAnalysis.py
 
 When using the DynamicAnalysis.py script in this format:
 
@@ -36,7 +38,7 @@ The CSV file can include these values:
 
 See this [sample CSV file](sample_data/dynscan-dvna.csv) for an example.
 
-## Example Usage
+### Example Usage
 
 ```bash
 
