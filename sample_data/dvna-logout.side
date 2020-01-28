@@ -1,0 +1,49 @@
+{
+  "id": "f11c8f9f-3dd2-4583-b455-b3dfb76051bd",
+  "version": "2.0",
+  "name": "dvna-logout",
+  "url": "http://dvna:9090/learn/vulnerability/a1_injection",
+  "tests": [{
+    "id": "0c1603f8-0703-4a25-8261-dfc4fc9f58ca",
+    "name": "dvna-logout",
+    "commands": [{
+      "id": "7b32aff0-08df-4714-94e6-d9334b4c1339",
+      "comment": "",
+      "command": "open",
+      "target": "http://dvna:9090/learn",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "a910a72d-6798-47ca-8365-8181da5f2870",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "921x691",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "10af24b5-dc02-4b68-8041-3145b90368ec",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Logout",
+      "targets": [
+        ["linkText=Logout", "linkText"],
+        ["css=.nav a", "css:finder"],
+        ["xpath=//div[@id='navbar']/ul/li/a", "xpath:idRelative"],
+        ["xpath=//a[contains(@href, '/logout')]", "xpath:href"],
+        ["xpath=//li/a", "xpath:position"],
+        ["xpath=//a[contains(.,' Logout')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }]
+  }],
+  "suites": [{
+    "id": "f973ea8f-ff2a-43ef-85c9-53eba990add6",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": ["0c1603f8-0703-4a25-8261-dfc4fc9f58ca"]
+  }],
+  "urls": ["http://dvna:9090/", "http://dvna:9090/learn/vulnerability/a1_injection", "http://dvna:9090/learn/vulnerability/a3_sensitive_data"],
+  "plugins": []
+}

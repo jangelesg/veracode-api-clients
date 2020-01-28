@@ -1,0 +1,686 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Veracode Policy API Documentation",
+    "version": "1.0",
+    "title": "Veracode Policy API Specification",
+    "termsOfService": "urn:tos",
+    "contact": {},
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "host": "api.veracode.com",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "policy information API",
+      "description": "Policy information API"
+    }
+  ],
+  "paths": {
+    "/appsec/v1/policies": {
+      "get": {
+        "tags": [
+          "policy information API"
+        ],
+        "summary": "getPolicies",
+        "description": "Returns a list of policies. The individual policy has links to policy evaluations performed against this policy.",
+        "operationId": "getPoliciesUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "legacy_policy_id",
+            "in": "query",
+            "description": "Filters results based on the ID of the custom policy created in the Veracode Platform.",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "allowEmptyValue": false
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter on the policy name.",
+            "required": false,
+            "type": "string",
+            "allowEmptyValue": false
+          },
+          {
+            "name": "name_exact",
+            "in": "query",
+            "description": "Use this flag to enforce exact name-matching when filtering on the policy name.",
+            "required": false,
+            "type": "boolean",
+            "allowEmptyValue": false
+          },
+          {
+            "name": "org",
+            "in": "query",
+            "description": "Organization identifier (internal only).",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "allowEmptyValue": false
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number. Defaults to 0.",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "allowEmptyValue": false
+          },
+          {
+            "name": "public_policy",
+            "in": "query",
+            "description": "Filters results to include or exclude a public Veracode policy.",
+            "required": false,
+            "type": "boolean",
+            "default": true,
+            "allowEmptyValue": false
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size (1-500, defaults to 50).",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "allowEmptyValue": false
+          },
+          {
+            "name": "vendor_policy",
+            "in": "query",
+            "description": "Filters results to those with or without a vendor policy flag.",
+            "required": false,
+            "type": "boolean",
+            "allowEmptyValue": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Your request was successful.",
+            "schema": {
+              "$ref": "#/definitions/PolicyVersion"
+            }
+          },
+          "400": {
+            "description": "Invalid request. Verify all the components of your request and try again."
+          },
+          "401": {
+            "description": "You are not authorized to perform this action."
+          },
+          "403": {
+            "description": "Access denied. You are not authorized to make this request."
+          },
+          "404": {
+            "description": "This page does not exist. Verify the URI and try again."
+          },
+          "429": {
+            "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+          },
+          "500": {
+            "description": "Server-side error. Please try again later."
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "policy information API"
+        ],
+        "summary": "Create a new policy.",
+        "description": "Create and return the new policy.",
+        "operationId": "createPolicyUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "policy",
+            "description": "The policy object to be created.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PolicyVersion"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "You have successfully submitted your request.",
+            "schema": {
+              "$ref": "#/definitions/PolicyVersion"
+            }
+          },
+          "400": {
+            "description": "Invalid request. Verify all the components of your request and try again."
+          },
+          "401": {
+            "description": "You are not authorized to perform this action."
+          },
+          "403": {
+            "description": "Access denied. You are not authorized to make this request."
+          },
+          "404": {
+            "description": "This page does not exist. Verify the URI and try again."
+          },
+          "429": {
+            "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+          },
+          "500": {
+            "description": "Server-side error. Please try again later."
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/appsec/v1/policies/{policyGuid}": {
+      "get": {
+        "tags": [
+          "policy information API"
+        ],
+        "summary": "getPolicy",
+        "description": "Returns the latest version of the policy.",
+        "operationId": "getPolicyUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "policyGuid",
+            "in": "path",
+            "description": "The unique identifier of the policy (GUID).",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "You have successfully submitted your request.",
+            "schema": {
+              "$ref": "#/definitions/PolicyVersion"
+            }
+          },
+          "401": {
+            "description": "You are not authorized to perform this action."
+          },
+          "403": {
+            "description": "Access denied. You are not authorized to make this request."
+          },
+          "404": {
+            "description": "The policy was not found."
+          },
+          "429": {
+            "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+          },
+          "500": {
+            "description": "Server-side error. Please try again later."
+          }
+        },
+        "deprecated": false
+      },
+      "put": {
+        "tags": [
+          "policy information API"
+        ],
+        "summary": "Update the policy.",
+        "description": "Creates a new version of the policy that is the default when making a GET call to this endpoint.",
+        "operationId": "updatePolicyUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "policy",
+            "description": "The new policy version to be created.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PolicyVersion"
+            }
+          },
+          {
+            "name": "policyGuid",
+            "in": "path",
+            "description": "The unique identifier of the policy (GUID).",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "You have successfully submitted your request.",
+            "schema": {
+              "$ref": "#/definitions/PolicyVersion"
+            }
+          },
+          "400": {
+            "description": "Invalid request. Verify all the components of your request and try again."
+          },
+          "401": {
+            "description": "You are not authorized to perform this action."
+          },
+          "403": {
+            "description": "Access denied. You are not authorized to make this request."
+          },
+          "404": {
+            "description": "This page does not exist. Verify the URI and try again."
+          },
+          "429": {
+            "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+          },
+          "500": {
+            "description": "Server-side error. Please try again later."
+          }
+        },
+        "deprecated": false
+      },
+      "delete": {
+        "tags": [
+          "policy information API"
+        ],
+        "summary": "Delete all versions of the policy.",
+        "description": "Delete the policy. This deletion only succeeds if the policy is not associated with any applications or policy evaluations.",
+        "operationId": "deletePolicyUsingDELETE",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "policyGuid",
+            "in": "path",
+            "description": "The unique identifier of the policy (GUID).",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "replace_with_default_policy",
+            "in": "query",
+            "description": "Replace with the default policy, based on the business criticality of the application.",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "allowEmptyValue": false
+          },
+          {
+            "name": "replacement_GUID",
+            "in": "query",
+            "description": "The unique identifier of the replacement policy (GUID).",
+            "required": false,
+            "type": "string",
+            "allowEmptyValue": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "You have successfully submitted your request.",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Invalid request. Verify all the components of your request and try again."
+          },
+          "401": {
+            "description": "You are not authorized to perform this action."
+          },
+          "403": {
+            "description": "Access denied. You are not authorized to make this request."
+          },
+          "404": {
+            "description": "This page does not exist. Verify the URI and try again."
+          },
+          "429": {
+            "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+          },
+          "500": {
+            "description": "Server-side error. Please try again later."
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/appsec/v1/policies/{policyGuid}/versions": {
+      "get": {
+        "tags": [
+          "policy information API"
+        ],
+        "summary": "getPolicyVersions",
+        "description": "Returns a list of all versions of the policy. Past versions of the policy that are not currently linked to an application or evaluation are deleted and do not appear in this list.",
+        "operationId": "getPolicyVersionsUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number. Defaults to 0.",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "allowEmptyValue": false
+          },
+          {
+            "name": "policyGuid",
+            "in": "path",
+            "description": "The unique identifier of the policy (GUID).",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size (1-500). Defaults to 50.",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "allowEmptyValue": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "You have successfully submitted your request.",
+            "schema": {
+              "$ref": "#/definitions/PolicyVersion"
+            }
+          },
+          "400": {
+            "description": "Invalid request. Verify all the components of your request and try again."
+          },
+          "401": {
+            "description": "You are not authorized to perform this action."
+          },
+          "403": {
+            "description": "Access denied. You are not authorized to make this request."
+          },
+          "404": {
+            "description": "This page does not exist. Verify the URI and try again."
+          },
+          "429": {
+            "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+          },
+          "500": {
+            "description": "Server-side error. Please try again later."
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/appsec/v1/policies/{policyGuid}/versions/{version}": {
+      "get": {
+        "tags": [
+          "policy information API"
+        ],
+        "summary": "getPolicyVersion",
+        "description": "Returns the requested policy version.",
+        "operationId": "getPolicyVersionUsingGET",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "policyGuid",
+            "in": "path",
+            "description": "The unique identifier of the policy (GUID).",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "The specific version of this policy. The default is the last version provided.",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "You have successfully submitted your request.",
+            "schema": {
+              "$ref": "#/definitions/PolicyVersion"
+            }
+          },
+          "401": {
+            "description": "You are not authorized to perform this action."
+          },
+          "403": {
+            "description": "Access denied. You are not authorized to make this request."
+          },
+          "404": {
+            "description": "This page does not exist. Verify the URI and try again."
+          },
+          "429": {
+            "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+          },
+          "500": {
+            "description": "Server-side error. Please try again later."
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "definitions": {
+    "CustomSeverity": {
+      "type": "object",
+      "properties": {
+        "cwe": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The CWE associated with the custom severity."
+        },
+        "severity": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The severity to be applied to findings of the specified CWE."
+        }
+      },
+      "title": "CustomSeverity"
+    },
+    "FindingRule": {
+      "type": "object",
+      "properties": {
+        "policy_version": {
+          "$ref": "#/definitions/PolicyVersion"
+        },
+        "scan_type": {
+          "type": "array",
+          "description": "The type of scan on which to enforce the rule.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "STATIC",
+              "DYNAMIC",
+              "MANUAL",
+              "SCA",
+              "MOBILE",
+              "ALL",
+              "DYNAMICMP"
+            ]
+          }
+        },
+        "type": {
+          "type": "string",
+          "description": "Specify the supported rule types.",
+          "enum": [
+            "FAIL_ALL",
+            "CWE",
+            "CATEGORY",
+            "MAX_SEVERITY",
+            "CVSS",
+            "CVE",
+            "BLACKLIST",
+            "MIN_SCORE",
+            "SECURITY_STANDARD",
+            "LICENSE_RISK"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "description": "The value of this specific rule, such as the minimal score value. This value does not apply to the FAIL_ALL rule type."
+        }
+      },
+      "title": "FindingRule"
+    },
+    "PolicyVersion": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the application was created. The date/time is formatted as per RFC3339 and ISO-8601. The timezone is UTC."
+        },
+        "custom_severities": {
+          "type": "array",
+          "description": "A set of severity overrides for use with this policy.",
+          "items": {
+            "$ref": "#/definitions/CustomSeverity"
+          }
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the policy."
+        },
+        "finding_rules": {
+          "type": "array",
+          "description": "A set of rules to be evaluated against the scan findings.",
+          "items": {
+            "$ref": "#/definitions/FindingRule"
+          }
+        },
+        "guid": {
+          "type": "string",
+          "description": "Unique identifier (UUID)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Policy name."
+        },
+        "organization_id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The organization with which the policy is associated. If no value is provided, the results are publicly visible."
+        },
+        "sca_blacklist_grace_period": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The grace period in number of days permitted for blacklisted scan components."
+        },
+        "scan_frequency_rules": {
+          "type": "array",
+          "description": "The set of scan frequencies to be evaluated.",
+          "items": {
+            "$ref": "#/definitions/ScanFrequency"
+          }
+        },
+        "score_grace_period": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of days grace period allowed for the policy score."
+        },
+        "sev0_grace_period": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of days grace period allowed for findings of severity 0."
+        },
+        "sev1_grace_period": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of days grace period allowed for findings of severity 1."
+        },
+        "sev2_grace_period": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of days grace period allowed for findings of severity 2."
+        },
+        "sev3_grace_period": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of days grace period allowed for findings of severity 3."
+        },
+        "sev4_grace_period": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of days grace period allowed for findings of severity 4."
+        },
+        "sev5_grace_period": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of days grace period allowed for findings of severity 5."
+        },
+        "type": {
+          "type": "string",
+          "description": "The evaluation policy type.",
+          "enum": [
+            "BUILTIN",
+            "VERACODELEVEL",
+            "CUSTOMER",
+            "STANDARD"
+          ]
+        },
+        "vendor_policy": {
+          "type": "boolean",
+          "description": "Use this flag to indicate if this policy is to be visible and available for policy evaluation by a vendor organization."
+        },
+        "version": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The version of this policy."
+        }
+      },
+      "title": "PolicyVersion"
+    },
+    "ScanFrequency": {
+      "type": "object",
+      "properties": {
+        "frequency": {
+          "type": "string",
+          "description": "The frequency by which the organization is required to scan.",
+          "enum": [
+            "NOT_REQUIRED",
+            "ONCE",
+            "WEEKLY",
+            "MONTHLY",
+            "QUARTERLY",
+            "SEMI_ANNUALLY",
+            "ANNUALLY",
+            "EVERY_18_MONTHS",
+            "EVERY_2_YEARS",
+            "EVERY_3_YEARS",
+            "SET_BY_VL_POLICY",
+            "SET_BY_POLICY_RULE"
+          ]
+        },
+        "policy_version": {
+          "$ref": "#/definitions/PolicyVersion"
+        },
+        "scan_type": {
+          "type": "string",
+          "description": "The type of scan on which to enforce the rule.",
+          "enum": [
+            "STATIC",
+            "DYNAMIC",
+            "MANUAL",
+            "SCA",
+            "ANY"
+          ]
+        }
+      },
+      "title": "ScanFrequency"
+    }
+  }
+}

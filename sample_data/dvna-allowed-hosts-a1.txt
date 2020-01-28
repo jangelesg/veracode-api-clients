@@ -1,0 +1,2 @@
+http://dvna:9090/app/usersearch
+http://dvna:9090/app/ping

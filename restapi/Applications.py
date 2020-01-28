@@ -34,7 +34,6 @@ class Applications:
         return response.json()
       else:
         log.warning("Request for application list failed with %s code", response.text)
-        prettyPrintObj(response.json())
         sys.exit(2)
 
 

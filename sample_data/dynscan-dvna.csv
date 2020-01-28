@@ -1,0 +1,3 @@
+url,app_uuid,base_path,login_script_file,logout_script_file,crawl_script_file,allowed_hosts_file,blacklist_file,ism_endpoint_id,ism_gateway_id
+http://dvna:9090/learn/vulnerability/a1_injection,e5795c37-4852-4111-9f82-1d65eef736eb,../sample_data/,dvna-login.side,dvna-logout.side,dvna-A1-Injection.side,dvna-allowed-hosts-a1.txt,dvna-blacklist-a1.txt,91021a3a-5e6a-4c6a-931b-6bdeb28ce9b7,162aad44-8b2e-409f-8c1e-2baf0255f269
+http://dvna:9090/learn/vulnerability/a3_sensitive_data,,../sample_data/,dvna-login.side,dvna-logout.side,dvna-A3-SensitiveDataExposure.side,dvna-allowed-hosts-a3.txt,dvna-blacklist-a3.txt,91021a3a-5e6a-4c6a-931b-6bdeb28ce9b7,162aad44-8b2e-409f-8c1e-2baf0255f269

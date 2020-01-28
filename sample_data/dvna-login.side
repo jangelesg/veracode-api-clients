@@ -1,0 +1,94 @@
+{
+  "id": "f11c8f9f-3dd2-4583-b455-b3dfb76051bd",
+  "version": "2.0",
+  "name": "dvna-login",
+  "url": "http://dvna:9090/learn/vulnerability/a1_injection",
+  "tests": [{
+    "id": "55e3c483-70d9-400a-9651-f5c3d19549f5",
+    "name": "dvna-login",
+    "commands": [{
+      "id": "d8f57870-6183-4cba-a097-8f345813438f",
+      "comment": "",
+      "command": "open",
+      "target": "http://dvna:9090/login",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "35ad78ce-5f11-45af-a732-fbf0caeabd4c",
+      "comment": "",
+      "command": "click",
+      "target": "id=login_login",
+      "targets": [
+        ["id=login_login", "id"],
+        ["name=username", "name"],
+        ["css=#login_login", "css:finder"],
+        ["xpath=//input[@id='login_login']", "xpath:attributes"],
+        ["xpath=//form[@id='login']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "9a4652c2-fc24-4972-aec1-8da8117cb996",
+      "comment": "",
+      "command": "type",
+      "target": "id=login_login",
+      "targets": [
+        ["id=login_login", "id"],
+        ["name=username", "name"],
+        ["css=#login_login", "css:finder"],
+        ["xpath=//input[@id='login_login']", "xpath:attributes"],
+        ["xpath=//form[@id='login']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "tester"
+    }, {
+      "id": "8061605d-afaa-4179-8bd5-c2c5f5c9e588",
+      "comment": "",
+      "command": "type",
+      "target": "id=login_password",
+      "targets": [
+        ["id=login_password", "id"],
+        ["name=password", "name"],
+        ["css=#login_password", "css:finder"],
+        ["xpath=//input[@id='login_password']", "xpath:attributes"],
+        ["xpath=//form[@id='login']/fieldset/div[2]/div/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/input", "xpath:position"]
+      ],
+      "value": "tester123"
+    }, {
+      "id": "f670fdf9-2429-455c-831a-5ab3de045e4a",
+      "comment": "",
+      "command": "click",
+      "target": "id=login_0",
+      "targets": [
+        ["id=login_0", "id"],
+        ["css=#login_0", "css:finder"],
+        ["xpath=//input[@id='login_0']", "xpath:attributes"],
+        ["xpath=//form[@id='login']/fieldset/input", "xpath:idRelative"],
+        ["xpath=//fieldset/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "05a085d3-0881-4012-a7ed-f399dc955217",
+      "comment": "",
+      "command": "verifyText",
+      "target": "css=strong",
+      "targets": [
+        ["css=strong", "css:finder"],
+        ["xpath=//strong", "xpath:position"],
+        ["xpath=//strong[contains(.,'Damn Vulnerable NodeJS Application')]", "xpath:innerText"]
+      ],
+      "value": "Damn Vulnerable NodeJS Application"
+    }]
+  }],
+  "suites": [{
+    "id": "f973ea8f-ff2a-43ef-85c9-53eba990add6",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": ["55e3c483-70d9-400a-9651-f5c3d19549f5"]
+  }],
+  "urls": ["http://dvna:9090/", "http://dvna:9090/learn/vulnerability/a1_injection", "http://dvna:9090/learn/vulnerability/a3_sensitive_data"],
+  "plugins": []
+}

@@ -1,0 +1,2 @@
+http://dvna:9090/logout
+http://dvna:9090/bogus

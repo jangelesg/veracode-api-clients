@@ -1,0 +1,232 @@
+{
+  "id": "f11c8f9f-3dd2-4583-b455-b3dfb76051bd",
+  "version": "2.0",
+  "name": "dvna",
+  "url": "http://dvna:9090/learn/vulnerability/a1_injection",
+  "tests": [{
+    "id": "55e3c483-70d9-400a-9651-f5c3d19549f5",
+    "name": "dvna-login",
+    "commands": [{
+      "id": "d8f57870-6183-4cba-a097-8f345813438f",
+      "comment": "",
+      "command": "open",
+      "target": "http://dvna:9090/login",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "9e2dabe9-0cce-449e-b41a-294a7f76ef24",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "550x691",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "35ad78ce-5f11-45af-a732-fbf0caeabd4c",
+      "comment": "",
+      "command": "click",
+      "target": "id=login_login",
+      "targets": [
+        ["id=login_login", "id"],
+        ["name=username", "name"],
+        ["css=#login_login", "css:finder"],
+        ["xpath=//input[@id='login_login']", "xpath:attributes"],
+        ["xpath=//form[@id='login']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "8061605d-afaa-4179-8bd5-c2c5f5c9e588",
+      "comment": "",
+      "command": "type",
+      "target": "id=login_password",
+      "targets": [
+        ["id=login_password", "id"],
+        ["name=password", "name"],
+        ["css=#login_password", "css:finder"],
+        ["xpath=//input[@id='login_password']", "xpath:attributes"],
+        ["xpath=//form[@id='login']/fieldset/div[2]/div/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/input", "xpath:position"]
+      ],
+      "value": "tester123"
+    }, {
+      "id": "9a4652c2-fc24-4972-aec1-8da8117cb996",
+      "comment": "",
+      "command": "type",
+      "target": "id=login_login",
+      "targets": [
+        ["id=login_login", "id"],
+        ["name=username", "name"],
+        ["css=#login_login", "css:finder"],
+        ["xpath=//input[@id='login_login']", "xpath:attributes"],
+        ["xpath=//form[@id='login']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "tester"
+    }, {
+      "id": "f670fdf9-2429-455c-831a-5ab3de045e4a",
+      "comment": "",
+      "command": "click",
+      "target": "id=login_0",
+      "targets": [
+        ["id=login_0", "id"],
+        ["css=#login_0", "css:finder"],
+        ["xpath=//input[@id='login_0']", "xpath:attributes"],
+        ["xpath=//form[@id='login']/fieldset/input", "xpath:idRelative"],
+        ["xpath=//fieldset/input", "xpath:position"]
+      ],
+      "value": ""
+    }]
+  }, {
+    "id": "e755bff0-715f-4316-80c3-23d1000d1cd2",
+    "name": "dvna-A1-Injection",
+    "commands": [{
+      "id": "0ba60f89-0d35-4a96-abad-ebe5b632b4c3",
+      "comment": "",
+      "command": "open",
+      "target": "http://dvna:9090/learn/vulnerability/a1_injection",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "8d61234f-88ca-43bb-b12a-fc094e84266a",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "550x691",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "da6c82e4-ddde-46c4-8fb9-7977252fa415",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=SQL Injection: User Search",
+      "targets": [
+        ["linkText=SQL Injection: User Search", "linkText"],
+        ["css=div:nth-child(3) li:nth-child(1) > a", "css:finder"],
+        ["xpath=//a[contains(text(),'SQL Injection: User Search')]", "xpath:link"],
+        ["xpath=//a[contains(@href, '/app/usersearch')]", "xpath:href"],
+        ["xpath=//div[2]/div/ul/li/a", "xpath:position"],
+        ["xpath=//a[contains(.,'SQL Injection: User Search')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "b332c920-7ce5-4550-b9ac-e1eb9f684f42",
+      "comment": "",
+      "command": "click",
+      "target": "id=userSearch_login",
+      "targets": [
+        ["id=userSearch_login", "id"],
+        ["name=login", "name"],
+        ["css=#userSearch_login", "css:finder"],
+        ["xpath=//input[@id='userSearch_login']", "xpath:attributes"],
+        ["xpath=//form[@id='userSearch']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "7db1ac2d-8f05-40d5-b57f-f3d11f1480d1",
+      "comment": "",
+      "command": "type",
+      "target": "id=userSearch_login",
+      "targets": [
+        ["id=userSearch_login", "id"],
+        ["name=login", "name"],
+        ["css=#userSearch_login", "css:finder"],
+        ["xpath=//input[@id='userSearch_login']", "xpath:attributes"],
+        ["xpath=//form[@id='userSearch']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "tester"
+    }, {
+      "id": "1293ada4-9df9-4bf6-963d-05e3cd917aa6",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=userSearch_login",
+      "targets": [
+        ["id=userSearch_login", "id"],
+        ["name=login", "name"],
+        ["css=#userSearch_login", "css:finder"],
+        ["xpath=//input[@id='userSearch_login']", "xpath:attributes"],
+        ["xpath=//form[@id='userSearch']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "5ba8850f-3f27-40ad-8126-d7b5d86ff8f0",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Command Injection: Network Connectivity Test",
+      "targets": [
+        ["linkText=Command Injection: Network Connectivity Test", "linkText"],
+        ["css=ul:nth-child(1) > li:nth-child(2) > a", "css:finder"],
+        ["xpath=//a[contains(text(),'Command Injection: Network Connectivity Test')]", "xpath:link"],
+        ["xpath=//a[contains(@href, '/app/ping')]", "xpath:href"],
+        ["xpath=//li[2]/a", "xpath:position"],
+        ["xpath=//a[contains(.,'Command Injection: Network Connectivity Test')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "3211b5ff-185e-4761-9e73-af533045741c",
+      "comment": "",
+      "command": "click",
+      "target": "id=ping_address",
+      "targets": [
+        ["id=ping_address", "id"],
+        ["name=address", "name"],
+        ["css=#ping_address", "css:finder"],
+        ["xpath=//input[@id='ping_address']", "xpath:attributes"],
+        ["xpath=//form[@id='ping']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "529a1957-890c-4ee6-b094-e4c84d06efc1",
+      "comment": "",
+      "command": "type",
+      "target": "id=ping_address",
+      "targets": [
+        ["id=ping_address", "id"],
+        ["name=address", "name"],
+        ["css=#ping_address", "css:finder"],
+        ["xpath=//input[@id='ping_address']", "xpath:attributes"],
+        ["xpath=//form[@id='ping']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "127.0.0.1"
+    }, {
+      "id": "73d29f59-c96e-4e71-8077-3004b660b0c6",
+      "comment": "",
+      "command": "sendKeys",
+      "target": "id=ping_address",
+      "targets": [
+        ["id=ping_address", "id"],
+        ["name=address", "name"],
+        ["css=#ping_address", "css:finder"],
+        ["xpath=//input[@id='ping_address']", "xpath:attributes"],
+        ["xpath=//form[@id='ping']/fieldset/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "${KEY_ENTER}"
+    }, {
+      "id": "ee587bb7-fb06-4693-b2e4-5e38cdba8bab",
+      "comment": "",
+      "command": "click",
+      "target": "css=fieldset",
+      "targets": [
+        ["css=fieldset", "css:finder"],
+        ["xpath=//form[@id='ping']/fieldset", "xpath:idRelative"],
+        ["xpath=//fieldset", "xpath:position"],
+        ["xpath=//fieldset[contains(.,'Address')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }]
+  }],
+  "suites": [{
+    "id": "f973ea8f-ff2a-43ef-85c9-53eba990add6",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": ["55e3c483-70d9-400a-9651-f5c3d19549f5", "e755bff0-715f-4316-80c3-23d1000d1cd2"]
+  }],
+  "urls": ["http://dvna:9090/", "http://dvna:9090/learn/vulnerability/a1_injection"],
+  "plugins": []
+}

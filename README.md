@@ -29,25 +29,35 @@ veracode_api_key_id = <YOUR_API_KEY_ID>
 veracode_api_key_secret = <YOUR_API_KEY_SECRET>
 
 ### Run Dynamic Analysis Scan
-$ vi data/dynscan1.csv
-URL,LOGIN_SCRIPT,CRAWL_SCRIPT
-https://www.example.com/app/index.html,userlogin.side,
-https://www.example.com/admin/index.html,adminlogin.side,
+$ vi data/dynscan.csv
+url,app_uuid,base_path,login_script_file,logout_script_file,crawl_script_file,allowed_hosts_file,blacklist_file,ism_endpoint_id,ism_gateway_id
+http://dvna:9090/learn/vulnerability/a1_injection,,../sample_data/,dvna-login.side,,dvna-A1-Injection.side,dvna-allowed-hosts-a1.txt,dvna-blacklist-a1.txt,,
+http://dvna:9090/learn/vulnerability/a3_sensitive_data,,../sample_data/,dvna-login.side,,dvna-A3-SensitiveDataExposure.side,dvna-allowed-hosts-a3.txt,dvna-blacklist-a3.txt,,
 
 $ cd restapi
 
 $ ./DynamicAnalysis.py -h
-usage: DynamicAnalysis.py [-h] [--name NAME] [--start START_DATE]
-                          [--team TEAMID] [--csvfile CSVFILE]
+usage: DynamicAnalysis.py [-h] [--action SCAN_ACTION] [--name NAME]
+                          [--start START_DATE] [--team TEAMID]
+                          [--csvfile CSV_FILENAME]
 
 optional arguments:
-  -h, --help          show this help message and exit
-  --name NAME         Scan Name.
-  --start START_DATE  Start Date for scan.
-  --team TEAMID       Team ID. Default: none.
-  --csvfile CSVFILE   CSV file name. Default: "../data/dynscan1.csv"
+  -h, --help            show this help message and exit
+  --action SCAN_ACTION  Scan Action := [create, export]
+  --name NAME           Scan Name.
+  --start START_DATE    Start Date for scan.
+  --team TEAMID         Team ID. Default: none.
+  --csvfile CSV_FILENAME
+                        CSV file name.
 
-$ ./DynamicAnalysis.py
+$ ./DynamicAnalysis.py --action create --name "App X Authenticated Scan" --csvfile ../data/dynscan.csv
+[...]
+2020/01/28-03:05:47 DEBUG: Successful response: <Response [201]>
+
+$ ./DynamicAnalysis.py --name "App X Authenticated Scan" --action export
+2020/01/28-03:09:41 INFO: Exporting scan spec data for scan named 'App X Authenticated Scan'
+2020/01/28-03:09:42 INFO: Saved Veracode scan spec for 'App X Authenticated Scan' to /app/data/ScanSpec.json
+2020/01/28-03:09:43 INFO: Saved Veracode scan details for 'App X Authenticated Scan' to /app/data/ScanDetails.json
 
 ### Get all app profile data
 $ ./Applications.py

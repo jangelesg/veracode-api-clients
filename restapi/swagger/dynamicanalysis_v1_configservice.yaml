@@ -1283,7 +1283,7 @@ definitions:
       name:
         type: string
         description: >
-          Name of the Dynamic Analysis. The name must be unique to the application porfolio of the organizjation and the 
+          Name of the Dynamic Analysis. The name must be unique to the application porfolio of the organization and the 
           length must be between 6 and 256 characters.
       org_info:
         description: Organization information.

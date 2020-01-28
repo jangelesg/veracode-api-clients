@@ -1,0 +1,623 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Veracode Manual Testing API Documentation",
+        "version": "1.0",
+        "title": "Veracode Manual Testing API Specification",
+        "termsOfService": "urn:tos",
+        "contact": {},
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0"
+        }
+    },
+    "host": "api.veracode.com",
+    "basePath": "/",
+    "tags": [
+        {
+            "name": "Manual Testing API",
+            "description": "Returns manual testing findings information from the Veracode MPT scan."
+        }
+    ],
+    "paths": {
+        "/mpt/v1/findings/{finding}": {
+            "get": {
+                "tags": [
+                    "Manual Testing API"
+                ],
+                "summary": "getFinding",
+                "description": "Returns manual testing finding information and links to associated resources.",
+                "operationId": "getFindingUsingGET",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "finding",
+                        "in": "path",
+                        "description": "The manual finding identifier.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "include_artifacts",
+                        "in": "query",
+                        "description": "Include the artifacts (code samples/screenshots) in the manual finding response.",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request. Returns a manual testing finding.",
+                        "schema": {
+                            "$ref": "#/definitions/Finding"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request. Verify all the components of your request and try again."
+                    },
+                    "401": {
+                        "description": "You are not authorized to perform this action."
+                    },
+                    "403": {
+                        "description": "Access denied. You are not authorized to make this request."
+                    },
+                    "404": {
+                        "description": "This page does not exist. Verify the URI and try again."
+                    },
+                    "429": {
+                        "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+                    },
+                    "500": {
+                        "description": "Server-side error. Please try again later."
+                    }
+                }
+            }
+        },
+        "/mpt/v1/scans": {
+            "get": {
+                "tags": [
+                    "Manual Testing API"
+                ],
+                "summary": "getScans",
+                "description": "Returns a list of pointers to the manual scans that were were performed on the application.",
+                "operationId": "getScansUsingGET",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "application",
+                        "in": "query",
+                        "description": "The application GUID.",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number, which defaults to zero.",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The page size (0-500). Defaults to 100.",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request. Returns an array of scans.",
+                        "schema": {
+                            "$ref": "#/definitions/PagedResources"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request. Verify all the components of your request and try again."
+                    },
+                    "401": {
+                        "description": "You are not authorized to perform this action."
+                    },
+                    "403": {
+                        "description": "Access denied. You are not authorized to make this request."
+                    },
+                    "404": {
+                        "description": "This page does not exist. Verify the URI and try again."
+                    },
+                    "429": {
+                        "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+                    },
+                    "500": {
+                        "description": "Server-side error. Please try again later."
+                    }
+                }
+            }
+        },
+        "/mpt/v1/scans/{scan}": {
+            "get": {
+                "tags": [
+                    "Manual Testing API"
+                ],
+                "summary": "getScan",
+                "description": "Returns manual scan information and links to associated resources.",
+                "operationId": "getScanUsingGET",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "scan",
+                        "in": "path",
+                        "description": "The manual scan GUID.",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request. Returns a scan.",
+                        "schema": {
+                            "$ref": "#/definitions/Scan"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request. Verify all the components of your request and try again."
+                    },
+                    "401": {
+                        "description": "You are not authorized to perform this action."
+                    },
+                    "403": {
+                        "description": "Access denied. You are not authorized to make this request."
+                    },
+                    "404": {
+                        "description": "This page does not exist. Verify the URI and try again."
+                    },
+                    "429": {
+                        "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+                    },
+                    "500": {
+                        "description": "Server-side error. Please try again later."
+                    }
+                }
+            }
+        },
+        "/mpt/v1/scans/{scan}/findings": {
+            "get": {
+                "tags": [
+                    "Manual Testing API"
+                ],
+                "summary": "getFindings",
+                "description": "Returns manual testing findings information from the Veracode MPT scan.",
+                "operationId": "getFindingsUsingGET",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "scan",
+                        "in": "path",
+                        "description": "The manual scan GUID.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "include_artifacts",
+                        "in": "query",
+                        "description": "Include the artifacts (code samples/screenshots) in the manual finding response.",
+                        "required": false,
+                        "type": "boolean"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number, which defaults to zero.",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "The page size (0-500). Defaults to 100.",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request. Returns an array of manual testing findings.",
+                        "schema": {
+                            "$ref": "#/definitions/PagedResources"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request. Verify all the components of your request and try again."
+                    },
+                    "401": {
+                        "description": "You are not authorized to perform this action."
+                    },
+                    "403": {
+                        "description": "Access denied. You are not authorized to make this request."
+                    },
+                    "404": {
+                        "description": "This page does not exist. Verify the URI and try again."
+                    },
+                    "429": {
+                        "description": "Request limit exceeded. You have sent too many requests in a single time period. Submit your request again later."
+                    },
+                    "500": {
+                        "description": "Server-side error. Please try again later."
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Appendix": {
+            "type": "object",
+            "properties": {
+                "code_samples": {
+                    "type": "array",
+                    "description": "List of code samples associated with a manual finding.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Appendix description."
+                },
+                "screenshots": {
+                    "type": "array",
+                    "description": "List of screenshots associated with a manual finding.",
+                    "items": {
+                        "$ref": "#/definitions/Screenshot"
+                    }
+                },
+                "source_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Unique identifier of the source."
+                }
+            },
+            "description": "An addon item for the manual finding, which contains associated artifacts for a manual finding."
+        },
+        "Finding": {
+            "type": "object",
+            "properties": {
+                "appendix": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Appendix"
+                    }
+                },
+                "count": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Number of duplicate findings found in all modules."
+                },
+                "cvss": {
+                    "type": "number",
+                    "format": "double",
+                    "description": "The CVSS score."
+                },
+                "cwe": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The CWE identifier."
+                },
+                "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date the scan finding was found."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the finding."
+                },
+                "exploitability": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Exploitability of the finding."
+                },
+                "external_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Alternative identifier of application finding that is unique to this application."
+                },
+                "guid": {
+                    "type": "string",
+                    "description": "Unique identifier (UUID)."
+                },
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Unique identifier (Long)."
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Link"
+                    }
+                },
+                "matched_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Identifier that matches this finding."
+                },
+                "resolution": {
+                    "type": "string",
+                    "description": "Resolution of the finding."
+                },
+                "severity": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Severity of the finding."
+                },
+                "source": {
+                    "$ref": "#/definitions/Source"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Internal classification of the finding."
+                }
+            }
+        },
+        "Link": {
+            "type": "object",
+            "properties": {
+                "href": {
+                    "type": "string"
+                },
+                "rel": {
+                    "type": "string"
+                },
+                "templated": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "PageMetadata": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "size": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "totalElements": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "totalPages": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "PagedResources": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Link"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/PageMetadata"
+                }
+            }
+        },
+        "PagedResources«Resource«Finding»»": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Resource«Finding»"
+                    }
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Link"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/PageMetadata"
+                }
+            }
+        },
+        "PagedResources«Resource«Scan»»": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Resource«Scan»"
+                    }
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Link"
+                    }
+                },
+                "page": {
+                    "$ref": "#/definitions/PageMetadata"
+                }
+            }
+        },
+        "Scan": {
+            "type": "object",
+            "properties": {
+                "application_guid": {
+                    "type": "string",
+                    "description": "Application identifier (UUID)."
+                },
+                "application_id": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Unique identifier of the application."
+                },
+                "completed": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date and time the scan completed."
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date and time of scan creation."
+                },
+                "guid": {
+                    "type": "string",
+                    "description": "Unique identifier (UUID) of the scan."
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Link"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the scan."
+                },
+                "published": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date and time of scan publication."
+                },
+                "scan_type": {
+                    "type": "string",
+                    "description": "Scan type."
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Current scan status.",
+                    "enum": [
+                        "Incomplete",
+                        "No scan submitted",
+                        "Submitted to Engine",
+                        "Scan Errors",
+                        "Scan In Process",
+                        "Scan Cancelled",
+                        "Scan Internal Error",
+                        "Pending Internal Review",
+                        "Results Ready",
+                        "Prescan Submitted",
+                        "Prescan Failed",
+                        "Prescan Success",
+                        "No Modules Defined",
+                        "Pending Vendor Confirmation",
+                        "Prescan Cancelled",
+                        "Scan On Hold",
+                        "Timeframe Pending",
+                        "Paused",
+                        "Stopping",
+                        "Pausing"
+                    ]
+                },
+                "submitted": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date and time of scan submission."
+                }
+            }
+        },
+        "Screenshot": {
+            "type": "object",
+            "properties": {
+                "appendix_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Unique identifier of the appendix."
+                },
+                "data": {
+                    "type": "string",
+                    "format": "byte",
+                    "description": "The screenshot file data."
+                },
+                "format": {
+                    "type": "string",
+                    "description": "File format of the screenshot."
+                }
+            },
+            "description": "A screenshot associated with the manual finding."
+        },
+        "Source": {
+            "type": "object",
+            "properties": {
+                "capec_id": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Unique indentifier for the attack category which contains subcategories as (abuse of functionality, spoofing, probabilistic techniques, exploitation of authentication, resource depletion, exploitation of privilege/trust, injection, data structure attacks, data leakage attacks, resource manipulation, and time and state attacks)."
+                },
+                "exploit_desc": {
+                    "type": "string",
+                    "description": "Description of the cause of the manual finding."
+                },
+                "exploit_difficulty": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Category of level of effort needed to fix the manual finding."
+                },
+                "input_vector": {
+                    "type": "string",
+                    "description": "URL for the attack vector."
+                },
+                "location": {
+                    "type": "string",
+                    "description": "Relative location of the manual finding."
+                },
+                "module": {
+                    "type": "string",
+                    "description": "Module where the manual finding exists."
+                },
+                "note": {
+                    "type": "string",
+                    "description": "Review note of the manual finding."
+                },
+                "remediation_desc": {
+                    "type": "string",
+                    "description": "Description of remediation needed for the attack vector."
+                },
+                "severity_desc": {
+                    "type": "string",
+                    "description": "Description of the severity of the manual finding."
+                }
+            },
+            "description": "Representation of the source of a manual finding."
+        }
+    }
+}
