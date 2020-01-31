@@ -84,23 +84,24 @@ class DynamicAnalysis:
                 if (row['app_uuid'] != ""): 
                     scan["linked_platform_app_uuid"] = row['app_uuid']
 
-                # Add Crawl script
-                # TODO: Support crawl_script_file (or validate what's already here)
-                if (row['crawl_script_file'] != ""):
-                    crawl_script_path = row['base_path'] + "/" + row['crawl_script_file']
-                    log.debug("Reading crawl script data from %s", crawl_script_path)
-                    f = open(crawl_script_path, "r")
-                    crawl_script_data = f.read()
-                    scan["crawl_configuration"] = { \
-                            "scripts": [ {\
-                                "crawl_script_data": { \
-                                    "script_type": "SELENIUM", \
-                                    "script_body": crawl_script_data \
-                                }, \
-                                "name": row['crawl_script_file'] \
-                            }], \
-                            "disabled": False \
-                        }
+                # Don't uncomment the below code, it won't work. It was added when the sample JSON (on help.veracode.com) was inaccurate.
+                # # Add Crawl script
+                # # TODO: Support crawl_script_file (or validate what's already here)
+                # if (row['crawl_script_file'] != ""):
+                #     crawl_script_path = row['base_path'] + "/" + row['crawl_script_file']
+                #     log.debug("Reading crawl script data from %s", crawl_script_path)
+                #     f = open(crawl_script_path, "r")
+                #     crawl_script_data = f.read()
+                #     scan["crawl_configuration"] = { \
+                #             "scripts": [ {\
+                #                 "crawl_script_data": { \
+                #                     "script_type": "SELENIUM", \
+                #                     "script_body": crawl_script_data \
+                #                 }, \
+                #                 "name": row['crawl_script_file'] \
+                #             }], \
+                #             "disabled": False \
+                #         }
 
 
                 # Add Allowed Hosts
@@ -157,22 +158,23 @@ class DynamicAnalysis:
                                         "script_type": "SELENIUM" \
                                     }
 
-                # # Add Crawl script
-                # # TODO: Support crawl_script_file (or validate what's already here)
-                # if (row['crawl_script_file'] != ""):
-                #     crawl_script_path = row['base_path'] + "/" + row['crawl_script_file']
-                #     log.debug("Reading crawl script data from %s", crawl_script_path)
-                #     f = open(crawl_script_path, "r")
-                #     crawl_script_data = f.read()
-                #     scan["scan_config_request"]["crawl_configuration"] = \
-                #         {   "scripts": [ \
-                #             {   "crawl_script_data":{ \
-                #                     "script_body": crawl_script_data, \
-                #                     "script_type": "SELENIUM" \
-                #                 }\
-                #             }], \
-                #             "disabled": False \
-                #         }  
+                # Add Crawl script. 
+                # PLEASE NOTE: Today (Jan. 2020), the result will not be visible in the Veracode UI. 
+                #              Only Veracode Support can confirm proper deployment.
+                if (row['crawl_script_file'] != ""):
+                    crawl_script_path = row['base_path'] + "/" + row['crawl_script_file']
+                    log.debug("Reading crawl script data from %s", crawl_script_path)
+                    f = open(crawl_script_path, "r")
+                    crawl_script_data = f.read()
+                    scan["scan_config_request"]["crawl_configuration"] = \
+                        {   "scripts": [ \
+                            {   "crawl_script_data":{ \
+                                    "script_body": crawl_script_data, \
+                                    "script_type": "SELENIUM" \
+                                }\
+                            }], \
+                            "disabled": False \
+                        }  
 
                 # App to scan spec (for all URLs)
                 scans.append(scan)
@@ -183,9 +185,9 @@ class DynamicAnalysis:
         api_base="https://api.veracode.com/was/configservice/v1/analyses"
 
         try:
-            #param1 = "run_verification=true"
-            #param2 = "validate_only=true"
-            url= api_base
+            param1 = "?run_verification=true"
+            param2 = "&validate_only=true"
+            url= api_base + param1 # + param2
             log.info("Sending POST request to %s", url)
             log.debug("POST Body: " + json.dumps(scan_request_data, sort_keys=True, indent=4))
             response = requests.post(url, auth=RequestsAuthPluginVeracodeHMAC(), headers=self.headers, json=scan_request_data, verify=verifyCert)
@@ -201,6 +203,7 @@ class DynamicAnalysis:
             print(e)
             sys.exit(2)
 
+# TODO: Implement validations
 def check_args(args):
     log.debug("name = %s", args.name)
     log.debug("start_date = %s", args.start_date)
