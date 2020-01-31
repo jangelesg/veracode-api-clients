@@ -86,15 +86,14 @@ class DynamicAnalysis:
 
                 # Add Crawl script
                 # TODO: Support crawl_script_file (or validate what's already here)
-                '''
                 if (row['crawl_script_file'] != ""):
                     crawl_script_path = row['base_path'] + "/" + row['crawl_script_file']
                     log.debug("Reading crawl script data from %s", crawl_script_path)
                     f = open(crawl_script_path, "r")
                     crawl_script_data = f.read()
-                    scan["crawl_configuration"] = \
-                        {   "scripts": [ \
-                            {   "crawl_script_data": { \
+                    scan["crawl_configuration"] = { \
+                            "scripts": [ {\
+                                "crawl_script_data": { \
                                     "script_type": "SELENIUM", \
                                     "script_body": crawl_script_data \
                                 }, \
@@ -102,7 +101,6 @@ class DynamicAnalysis:
                             }], \
                             "disabled": False \
                         }
-                '''
 
 
                 # Add Allowed Hosts
@@ -159,22 +157,22 @@ class DynamicAnalysis:
                                         "script_type": "SELENIUM" \
                                     }
 
-                # Add Crawl script
-                # TODO: Support crawl_script_file (or validate what's already here)
-                if (row['crawl_script_file'] != ""):
-                    crawl_script_path = row['base_path'] + "/" + row['crawl_script_file']
-                    log.debug("Reading crawl script data from %s", crawl_script_path)
-                    f = open(crawl_script_path, "r")
-                    crawl_script_data = f.read()
-                    scan["scan_config_request"]["crawl_configuration"] = \
-                        {   "scripts": [ \
-                            {   "crawl_script_data":{ \
-                                    "script_body": crawl_script_data, \
-                                    "script_type": "SELENIUM" \
-                                }\
-                            }], \
-                            "disabled": False \
-                        }  
+                # # Add Crawl script
+                # # TODO: Support crawl_script_file (or validate what's already here)
+                # if (row['crawl_script_file'] != ""):
+                #     crawl_script_path = row['base_path'] + "/" + row['crawl_script_file']
+                #     log.debug("Reading crawl script data from %s", crawl_script_path)
+                #     f = open(crawl_script_path, "r")
+                #     crawl_script_data = f.read()
+                #     scan["scan_config_request"]["crawl_configuration"] = \
+                #         {   "scripts": [ \
+                #             {   "crawl_script_data":{ \
+                #                     "script_body": crawl_script_data, \
+                #                     "script_type": "SELENIUM" \
+                #                 }\
+                #             }], \
+                #             "disabled": False \
+                #         }  
 
                 # App to scan spec (for all URLs)
                 scans.append(scan)
@@ -185,8 +183,8 @@ class DynamicAnalysis:
         api_base="https://api.veracode.com/was/configservice/v1/analyses"
 
         try:
-            run_verification = "run_verification=" + str(False)
-            validate_only = "validate_only=" + str(False)
+            #param1 = "run_verification=true"
+            #param2 = "validate_only=true"
             url= api_base
             log.info("Sending POST request to %s", url)
             log.debug("POST Body: " + json.dumps(scan_request_data, sort_keys=True, indent=4))
