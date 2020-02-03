@@ -15,7 +15,37 @@ When using the DynamicAnalysis.py script in this format:
 
 ```bash
 $ cd restapi
-$ ./DynamicAnalysis.py --action create --name SCAN_NAME --csvfile CSV_FILENAME
+$ ./DynamicAnalysis.py -h
+usage: DynamicAnalysis.py [-h] --action {create,export,update_crawl_script}
+                          --name NAME [--start START_DATE] [--team TEAMID]
+                          [--filename FILENAME]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --action {create,export,update_crawl_script}
+                        Scan Action.
+  --name NAME           Scan Name. Example: "Scan {APPNAME} with form auth and
+                        crawl script".
+  --start START_DATE    Start Date for scan. Applicable when --action=create.
+                        Example: "2020-03-03T02:00+00:00". Default: (not
+                        scheduled).
+  --team TEAMID         Team ID. Applicable when --action=create. If empty,
+                        only Security Leads will have visibility.
+  --filename FILENAME   Path to file. CSV file when --action=create. Path to
+                        Selenium script when --action=update_crawl_script.
+
+$ ./DynamicAnalysis.py --action=create \
+    --name="Scan MyApp with login and crawl scripts" \
+    --start="2020-03-03T02:00+00:00" \
+    --team="132892" \
+    --filename="../data/dynscan-dvna.csv"
+
+$ ./DynamicAnalysis.py --action=export  \
+    --name="Scan MyApp with login and crawl scripts"
+
+$ ./DynamicAnalysis.py --action=update_crawl_script \
+    --name="Scan MyApp with login and crawl scripts" \
+    --filename="../data/dvna-crawl.side"
 ```
 
 The CSV file can include these values:
