@@ -1,10 +1,7 @@
 #!/bin/bash
 #=========================================================================================
 # getSummaryReportsPDF.sh: Get PDF summary reports for all Veracode builds
-#
-# Prereq.: Local .env file with API_USER_NAME and API_USER_PWD values
 #=========================================================================================
-
 # Load values for OUTPUT_DIR, API_USER_NAME and API_USER_PWD 
 . ../.env 
 
@@ -49,7 +46,7 @@ for ab in $APP_BUILDS;do
   checkFile "$filename"
   if [ $isNew -eq 0 ];then
     echo -e "\n-- Invoking Veracode API to get ${OUTPUT_DIR}/${OUTPUT_FILE_BASE}-${ab}.pdf"
-    http -b --auth-type=veracode_hmac --output "${OUTPUT_DIR}/${OUTPUT_FILE_BASE}-${ab}.pdf" "${VERACODE_URI}?${REPORT_PARAM}=${ab}"
+    http --auth-type=veracode_hmac --output "${OUTPUT_DIR}/${OUTPUT_FILE_BASE}-${ab}.pdf" "${VERACODE_URI}?${REPORT_PARAM}=${ab}"
   else
     echo -e "\n-- Using local file ${OUTPUT_DIR}/${OUTPUT_FILE_BASE}-${ab}.pdf"
   fi

@@ -3,10 +3,11 @@
 <!-- TOC -->
 
 -   [README for veracode-api_clients](#readme-for-veracode-api_clients)
-    -   [Overview](#overview)
+-   [Overview](#overview)
+-   [Initial Setup](#initial-setup)
     -   [Using Docker](#using-docker)
-    -   [Using Veracode REST APIs](#using-veracode-rest-apis)
-        -   [Setup](#setup)
+    -   [Configuring Veracode credentials](#configuring-veracode-credentials)
+-   [Python Scripts](#python-scripts)
     -   [Using DynamicAnalysis.py](#using-dynamicanalysispy)
         -   [General Usage](#general-usage)
         -   [Creating Dynamic Analysis scans with form login and crawl scripts](#creating-dynamic-analysis-scans-with-form-login-and-crawl-scripts)
@@ -15,15 +16,20 @@
         -   [Updating Crawl Scripts](#updating-crawl-scripts)
     -   [Using Applications.py](#using-applicationspy)
         -   [Exporting all app profile data](#exporting-all-app-profile-data)
+-   [Bash Scripts](#bash-scripts)
+    -   [Get App profiles with getApps.sh](#get-app-profiles-with-getappssh)
+    -   [Other scripts](#other-scripts)
 
 <!-- /TOC -->
 
-## Overview
+# Overview
 
 -   Simple project with bash and python scripts using the Veracode XML and REST APIs
 -   Python scripts use the [Veracode REST API](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/TNCmFBcyE6F902_fr9Qz0g). The main one is [DynamicAnalysis.py](./restapi/DynamicAnalysis.py) that allows the use of new Veracode functionality may not even be covered by the Veracode Web UI (e.g. CSV import of URLs with form-based auth) or the existing wrappers used for CI/CD -- AFAIK, the [Veracode API Wrappers](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/Ib32zUpRx3cEwdR3duvUdg) still don't support the (newer) REST API.
 -   Bash scripts use the [Veracode XML API](https://help.veracode.com/reader/LMv_dtSHyb7iIxAQznC~9w/SdntedDhtLGc_zmxQ339OA). XML response parsing uses xsltproc.
 -   The included Dockerfile helps ensure the proper execution environment (getting all OS and python dependencies, configuring the python3 virtual environment...).
+
+# Initial Setup
 
 ## Using Docker
 
@@ -39,14 +45,9 @@ $ docker run -it --rm --mount type=bind,source="$PWD",target=/app --name veracod
 
 ### At first run:
 $ ./setup.sh
-$ cp .env.TEMPLATE .env
-$ vi .env
-$ . ./.env
 ```
 
-## Using Veracode REST APIs
-
-### Setup
+## Configuring Veracode credentials
 
 When using the REST API, you need to provide your Veracode API credentials:
 
@@ -56,7 +57,10 @@ $ vi $HOME/.veracode/credentials
 [default]
 veracode_api_key_id = <YOUR_API_KEY_ID>
 veracode_api_key_secret = <YOUR_API_KEY_SECRET>
+
 ```
+
+# Python Scripts
 
 ## Using DynamicAnalysis.py
 
@@ -160,3 +164,34 @@ $ ./Applications.py
 2020/01/27-05:54:30 INFO: Got page 6 of 6
 2020/01/27-05:54:30 INFO: Saved 568 Veracode App Profiles to /app/data/Apps.json
 ```
+
+# Bash Scripts
+
+## Get App profiles with getApps.sh
+
+Example run:
+
+```bash
+$ ./getApps.sh
+
+-- Invoking Veracode API to get /app/data/Apps.xml
+
+-- Converting XML file to /app/data/Apps.csv
+
+-- Printing first few lines of /app/data/Apps.csv
+AppName,AppId,BU,Owner,Product,LOB,DocUrl,CodeRepoUrl,ArtifactsRepoUrl,CodeReviewToolUrl,LastBuildVersion,LastBuildId,LastSubmitter,PolicyName,PolicyComplianceStatus,GracePeriodExpired
+[...]
+```
+
+## Other scripts
+
+| SCRIPT NAME              | PURPOSE                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| addVeracodeUser.sh       | Create a Veracode SSO user and enrich the profile with Active Directory data. |
+| getAppBuilds.sh          | Get list of Veracode app builds                                               |
+| getAppList.sh            | Get list of Veracode apps and save them to CSV file                           |
+| getApps.sh               | Get list of Veracode apps and all their important metadata and stats          |
+| getDetailedReports.sh    | Get detailed report data for all Veracode builds                              |
+| getDetailedReportsPDF.sh | Get detailed report data for all Veracode builds in PDF                       |
+| getSummaryReport.sh      | Get summary report data for all Veracode builds                               |
+| getSummaryReportsPDF.sh  | Get PDF summary reports for all Veracode builds                               |

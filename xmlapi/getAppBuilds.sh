@@ -1,9 +1,9 @@
 #!/bin/bash
 #=========================================================================================
 # getAppBuilds.sh: Get list of Veracode app builds
-#
-# Prereq.: $OUTPUT_DIR set beforehand (see ../.env)
 #=========================================================================================
+# Load environments (see sample .env.TEMPLATE)
+. ../.env
 
 # App-specific settings
 OUTPUT_FILE_BASE="AppBuilds"
@@ -19,7 +19,7 @@ mkdir "$OUTPUT_DIR" 2>/dev/null
 
 # Send XML API query
 echo -e "\n-- Invoking Veracode API to get ${OUTPUT_DIR}/${OUTPUT_FILE_BASE}.xml"
-http -b --auth-type=veracode_hmac --output "${OUTPUT_DIR}/${OUTPUT_FILE_BASE}.xml" ${VERACODE_URI}
+http --auth-type=veracode_hmac --output "${OUTPUT_DIR}/${OUTPUT_FILE_BASE}.xml" ${VERACODE_URI}
 
 # Convert XML to CSV
 echo -e "\n-- Converting XML file to ${OUTPUT_DIR}/${OUTPUT_FILE_BASE}.csv"
