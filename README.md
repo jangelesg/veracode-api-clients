@@ -1,8 +1,8 @@
-# README for veracode-api_clients
+# README for veracode-api-clients
 
 <!-- TOC -->
 
--   [README for veracode-api_clients](#readme-for-veracode-api_clients)
+-   [README for veracode-api-clients](#readme-for-veracode-api-clients)
 -   [Overview](#overview)
 -   [Initial Setup](#initial-setup)
     -   [Using Docker](#using-docker)
