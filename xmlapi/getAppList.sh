@@ -2,8 +2,6 @@
 #=========================================================================================
 # getAppList.sh: Get list of Veracode apps and save them to CSV file
 #=========================================================================================
-# Load environments (see sample .env.TEMPLATE)
-. ../.env
 
 # App-specific settings
 OUTPUT_FILE_BASE="AppList"

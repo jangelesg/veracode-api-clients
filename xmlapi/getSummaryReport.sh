@@ -3,9 +3,6 @@
 # getSummaryReportData.sh: Get summary report data for all Veracode builds
 #=========================================================================================
 
-# Load values for OUTPUT_DIR, API_USER_NAME and API_USER_PWD 
-. ../.env 
-
 # App-specific settings
 OUTPUT_FILE_BASE="SummaryReportData"
 VERACODE_URI="https://analysiscenter.veracode.com/api/4.0/summaryreport.do"

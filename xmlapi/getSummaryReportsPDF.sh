@@ -2,8 +2,6 @@
 #=========================================================================================
 # getSummaryReportsPDF.sh: Get PDF summary reports for all Veracode builds
 #=========================================================================================
-# Load values for OUTPUT_DIR, API_USER_NAME and API_USER_PWD 
-. ../.env 
 
 # App-specific settings
 OUTPUT_FILE_BASE="SummaryReport"

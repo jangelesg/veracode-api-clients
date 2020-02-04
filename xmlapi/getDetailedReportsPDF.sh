@@ -2,8 +2,6 @@
 #=========================================================================================
 # getDetailedReportsPDF.sh: Get detailed report data for all Veracode builds in PDF
 #=========================================================================================
-# Load values for OUTPUT_DIR, API_USER_NAME and API_USER_PWD 
-. ../.env 
 
 # App-specific settings
 OUTPUT_FILE_BASE="DetailedReport"

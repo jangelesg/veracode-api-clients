@@ -2,8 +2,6 @@
 #=========================================================================================
 # getAppBuilds.sh: Get list of Veracode app builds
 #=========================================================================================
-# Load environments (see sample .env.TEMPLATE)
-. ../.env
 
 # App-specific settings
 OUTPUT_FILE_BASE="AppBuilds"

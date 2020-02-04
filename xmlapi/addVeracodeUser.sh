@@ -5,10 +5,6 @@
 #
 # Usage: ./addVeracodeUser.sh FILENAME
 #==================================================================================================
-# Load environments (see sample .env.TEMPLATE)
-. ../.env 
-
-# Active Directory Parameters
 
 # Veracode Parameters
 VERACODE_URI="https://analysiscenter.veracode.com/api/3.0/createuser.do"
