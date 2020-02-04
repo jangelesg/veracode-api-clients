@@ -14,7 +14,7 @@
 #  -h, --help            show this help message and exit
 #  --action {create,export,update_crawl_script}
 #                        Scan Action.
-#  --name NAME           Scan Name. Example: "Scan {APPNAME} with form auth and
+#  --name NAME           Scan Name. Example: "Scan MyApp with form auth and
 #                        crawl script".
 #  --start START_DATE    Start Date for scan. Applicable when --action=create.
 #                        Example: "2020-03-03T02:00+00:00". Default: (not
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     # Read CLI Options
     parser = argparse.ArgumentParser()
     parser.add_argument('--action', help='Scan Action.', dest="scan_action", choices=action_choices, required=True)
-    parser.add_argument('--name', help='Scan Name. Example: "Scan {APPNAME} with form auth and crawl script".', dest="name", default=name, required=True)
+    parser.add_argument('--name', help='Scan Name. Example: "Scan MyApp with form auth and crawl script".', dest="name", default=name, required=True)
     parser.add_argument('--start', help='Start Date for scan. Applicable when --action=create. Example: "2020-03-03T02:00+00:00". Default: (not scheduled).', dest="start_date", default=start_date)
     parser.add_argument('--team', help='Team ID. Applicable when --action=create. If empty, only Security Leads will have visibility.', dest="teamId", default=teamId)
     parser.add_argument('--filename', help='Path to file. CSV file when --action=create. Path to Selenium script when --action=update_crawl_script.', dest="filename")
@@ -315,16 +315,19 @@ if __name__ == "__main__":
         if (args.teamId != ""):
             visibility ={ "setup_type" : "SEC_LEADS_AND_TEAM", "team_identifiers" : [ args.teamId ] }
 
+        # - Build a scan spec by getting inputs (URLs, login/crawl script...) from CSV
+        scans = a.build_scan_spec_from_csv(args.filename)
+
         # - Set the schedule
         schedule = {}
         if (args.start_date != ""):
             schedule = { "start_date": args.start_date, "duration": { "length": 1, "unit": "DAY" } }
+            # - Build the request body 
+            scan_request_data = {"name": args.name, "scans": scans, "schedule": schedule, "visibility": visibility} 
+        else:
+            # - Build the request body 
+            scan_request_data = {"name": args.name, "scans": scans, "visibility": visibility} 
 
-        # - Build a scan spec by getting inputs (URLs, login/crawl script...) from CSV
-        scans = a.build_scan_spec_from_csv(args.filename)
-
-        # - Build the request body 
-        scan_request_data = {"name": args.name, "scans": scans, "schedule": schedule, "visibility": visibility} 
 
         # Send request
         a.create_scan(scan_request_data)
