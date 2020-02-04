@@ -145,8 +145,7 @@ See this [sample CSV file](sample_data/dynscan-dvna.csv) for an example.
 ```bash
 $ vi data/dynscan.csv
 url,app_uuid,base_path,login_script_file,logout_script_file,crawl_script_file,allowed_hosts_file,blacklist_file,ism_endpoint_id,ism_gateway_id
-http://dvna:9090/learn/vulnerability/a1_injection,,../data/,dvna-login.side,,dvna-A1-Injection.side,dvna-allowed-hosts-a1.txt,dvna-blacklist-a1.txt,,
-http://dvna:9090/learn/vulnerability/a3_sensitive_data,,../data/,dvna-login.side,,dvna-A3-SensitiveDataExposure.side,dvna-allowed-hosts-a3.txt,dvna-blacklist-a3.txt,,
+http://dvna:9090/learn,,../sample_data/,dvna-login.side,,dvna-crawl.side,dvna-allowed-hosts.txt,dvna-blacklist.txt,,
 ```
 
 ### Exporting Scan Information
