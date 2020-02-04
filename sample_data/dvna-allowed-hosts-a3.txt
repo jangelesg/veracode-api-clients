@@ -1,1 +1,0 @@
-http://dvna:9090/app/admin/users
