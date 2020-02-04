@@ -17,3 +17,5 @@ xmlapi/getDynAnalysisScanDetails.sh
 venv
 restapi/__pycache__/
 settings.json
+restapi/MyCreate.sh
+restapi/MyExport.sh

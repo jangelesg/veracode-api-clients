@@ -1,0 +1,5 @@
+http://dvna:9090/logout
+http://dvna:9090/forgotpw
+http://dvna:9090/app/useredit
+http://dvna:9090/register
+http://dvna:9090/resetpw
