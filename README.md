@@ -49,7 +49,7 @@ $ ./setup.sh
 
 ## Configuring Veracode credentials
 
-When using the REST API, you need to provide your Veracode API credentials:
+When using the REST API, you need to provide your Veracode API credentials by modifying the API KEY ID and secret....
 
 ```bash
 $ mkdir $HOME/.veracode/
@@ -58,6 +58,22 @@ $ vi $HOME/.veracode/credentials
 veracode_api_key_id = <YOUR_API_KEY_ID>
 veracode_api_key_secret = <YOUR_API_KEY_SECRET>
 
+$ cp .env.TEMPLATE .env
+
+$ vi .env
+# Parameters that are normally static
+export OUTPUT_DIR="$HOME/data"
+export LOGDIR="$HOME/log"
+
+# Active Directory Parameters
+BASEDN="DC=example,DC=com"
+LDAP_DN="CN=Smith\, John,OU=Employees,OU=Users,DC=example,DC=com"
+export AD_HOST=addc01.example.com
+export HOST="$AD_HOST"
+
+# Veracode Parameters
+export VERACODE_API_KEY_ID=<YOUR_VERACODE_KEY_ID>
+export VERACODE_API_KEY_SECRET=<YOUR_VERACODE_KEY_SECRET>
 ```
 
 # Python Scripts
