@@ -58,7 +58,11 @@ $ vi $HOME/.veracode/credentials
 veracode_api_key_id = <YOUR_API_KEY_ID>
 veracode_api_key_secret = <YOUR_API_KEY_SECRET>
 
+$ chmod 600 $HOME/.veracode/credentials
+
 $ cp .env.TEMPLATE .env
+
+$ chmod 600 .env
 
 $ vi .env
 # Parameters that are normally static
