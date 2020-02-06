@@ -19,3 +19,10 @@ restapi/__pycache__/
 settings.json
 restapi/MyCreate.sh
 restapi/MyExport.sh
+restapi/MyCreateAnalysis.sh
+restapi/MyCreateCrawlScript.sh
+restapi/MyEnv.sh
+restapi/MyExportAnalysis.sh
+restapi/MyScanNow.sh
+restapi/MyUpdateCrawlScript.sh
+sample_data/dvna-url-list.txt

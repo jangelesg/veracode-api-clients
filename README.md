@@ -13,7 +13,9 @@
         -   [Creating Dynamic Analysis scans with form login and crawl scripts](#creating-dynamic-analysis-scans-with-form-login-and-crawl-scripts)
             -   [CSV file format](#csv-file-format)
         -   [Exporting Scan Information](#exporting-scan-information)
+        -   [Creating a simple Crawl Script from a path list](#creating-a-simple-crawl-script-from-a-path-list)
         -   [Updating Crawl Scripts](#updating-crawl-scripts)
+    -   [Triggering the immediate execution for an existing scan](#triggering-the-immediate-execution-for-an-existing-scan)
     -   [Using Applications.py](#using-applicationspy)
         -   [Exporting all app profile data](#exporting-all-app-profile-data)
 -   [Bash Scripts](#bash-scripts)
@@ -90,22 +92,34 @@ export VERACODE_API_KEY_SECRET=<YOUR_VERACODE_KEY_SECRET>
 $ cd restapi
 
 $ ./DynamicAnalysis.py -h
-
-usage: DynamicAnalysis.py [-h] --action {create,export,update_crawl_script}
-                          --name NAME [--start START_DATE] [--team TEAMID]
-                          [--filename FILENAME]
+usage: DynamicAnalysis.py [-h] --action
+                          {create_analysis,export_analysis,update_crawl_script,create_crawl_script,scan_now}
+                          [--scan-name SCAN_NAME] [--start START_DATE]
+                          [--team TEAMID] [--filename FILENAME]
+                          [--output-filename OUTPUT_FILENAME]
+                          [--base-url BASE_URL]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --action {create,export,update_crawl_script}
-                        Scan Action.
-  --name NAME           Scan Name. Example: "Scan MyApp with form auth and crawl script".
-  --start START_DATE    Start Date for scan. Applicable when --action=create.
-                        Example: "2020-03-03T02:00+00:00". Default: (not scheduled).
-  --team TEAMID         Team ID. Applicable when --action=create. If empty,
-                        only Security Leads will have visibility.
-  --filename FILENAME   Path to file. CSV file when --action=create. Path to
-                        Selenium script when --action=update_crawl_script.
+  --action {create_analysis,export_analysis,update_crawl_script,create_crawl_script,scan_now}
+                        Script Action.
+  --scan-name SCAN_NAME
+                        Scan Name. Example: "Scan MyApp".
+  --start START_DATE    Start Date for scan. Applicable when
+                        --action=create_analysis. Example:
+                        "2020-03-03T02:00+00:00". Default: (not scheduled).
+  --team TEAMID         Team ID. Applicable when --action=create_analysis. If
+                        empty, only Security Leads will have visibility.
+  --filename FILENAME   Path to input file name. CSV file when
+                        --action=create_analysis. Path to Selenium script when
+                        --action=update_crawl_script. Path to input text file
+                        (list of paths) for new_crawl_script.
+  --output-filename OUTPUT_FILENAME
+                        Path to output file name. Required for
+                        --action=create_crawl_script (extension should be
+                        ".side").
+  --base-url BASE_URL   Base URL for crawl script. Required for
+                        --action=create_crawl_script.
 ```
 
 ### Creating Dynamic Analysis scans with form login and crawl scripts
@@ -113,11 +127,14 @@ optional arguments:
 Example run to create a new Dynamic Analysis scan, as specified in a CSV file.
 
 ```bash
-$ ./DynamicAnalysis.py --action=create \
-    --name="Scan MyApp with login and crawl scripts" \
-    --start="2020-03-03T02:00+00:00" \
-    --team="132892" \
-    --filename="../data/dynscan-dvna.csv"
+$ ./DynamicAnalysis.py --action create_analysis \
+    --scan-name 'Scan DVNA, with login/crawl scripts' \
+    --start 2020-03-03T02:00+00:00 \
+    --team 132892 \
+    --filename ../data/dynscan-dvna.csv
+
+2020/02/06-22:35:35 INFO: Creating a new scan by sending a POST request to https://api.veracode.com/was/configservice/v1/analyses?run_verification=true
+2020/02/06-22:35:37 INFO: Successful response: <Response [201]>
 ```
 
 #### CSV file format
@@ -153,8 +170,42 @@ http://dvna:9090/learn,,../sample_data/,dvna-login.side,,dvna-crawl.side,dvna-al
 Example run:
 
 ```bash
-$ ./DynamicAnalysis.py --action=export  \
-    --name="Scan MyApp with login and crawl scripts"
+$ ./DynamicAnalysis.py --action=export_analysis --scan-name 'Scan DVNA, with login/crawl scripts'
+2020/02/06-22:48:24 INFO: Exporting scan spec data for scan named 'Scan DVNA, with login/crawl scripts'
+2020/02/06-22:48:24 INFO: Saved Veracode scan spec for 'Scan DVNA, with login/crawl scripts' to /app/data/WAS_CSAPI_Analysis_Summary.json
+2020/02/06-22:48:24 INFO: Saved Veracode scan details for 'Scan DVNA, with login/crawl scripts' to /app/data/WAS_CSAPI_Scan_Details.json
+2020/02/06-22:48:25 INFO: Saved Veracode analysis details for 'Scan DVNA, with login/crawl scripts' to /app/data/WAS_CSAPI_Analysis_Details.json
+```
+
+### Creating a simple Crawl Script from a path list
+
+```bash
+$ vi ../data/dvna-path-list.txt
+/learn/vulnerability/a1_injection
+/learn/vulnerability/a2_broken_auth
+/learn/vulnerability/a3_sensitive_data
+/learn/vulnerability/a4_xxe
+/learn/vulnerability/a5_broken_access_control
+/learn/vulnerability/a6_sec_misconf
+/learn/vulnerability/a7_xss
+/learn/vulnerability/a8_ides
+/learn/vulnerability/a9_vuln_component
+/learn/vulnerability/a10_logging
+/learn/vulnerability/ax_csrf
+/learn/vulnerability/ax_redirect
+/app/usersearch
+/forgotpw
+/app/admin/users
+/app/bulkproducts
+/app/admin
+/app/calc
+/app/products
+/app/modifyproduct
+/app/bulkproducts?legacy=true
+/app/bulkproductslegacy
+/app/redirect?url=/app/calc
+
+$ ./DynamicAnalysis.py --action=create_crawl_script --filename=../data/dvna-path-list.txt --output-filename=../data/dvna-simple-crawl.side --base-url=http://dvna:9090/learn
 ```
 
 ### Updating Crawl Scripts
@@ -162,9 +213,20 @@ $ ./DynamicAnalysis.py --action=export  \
 Example run to update the crawl script for an existing scan:
 
 ```bash
-$ ./DynamicAnalysis.py --action=update_crawl_script \
-    --name="Scan MyApp with login and crawl scripts" \
-    --filename="../data/dvna-crawl.side"
+$ ./DynamicAnalysis.py --action=update_crawl_script --scan-name='Scan DVNA, with login/crawl scripts' --filename=../data/dvna-simple-crawl.side
+2020/02/06-22:57:41 INFO: Updating crawl script for scan named 'Scan DVNA, with login/crawl scripts' from ../data/dvna-simple-crawl.side
+2020/02/06-22:57:41 INFO: Exporting scan spec data for scan named 'Scan DVNA, with login/crawl scripts'
+2020/02/06-22:57:42 INFO: Updating scan Scan DVNA, with login/crawl scripts by sending a PUT request to https://api.veracode.com/was/configservice/v1/scans/531c6da908fda93a19e0ece47e2cc776/configuration?runtime=false&method=PATCH
+2020/02/06-22:57:42 INFO: Successful response: <Response [204]>
+```
+
+## Triggering the immediate execution for an existing scan
+
+```bash
+$ ./DynamicAnalysis.py --action=scan_now --scan-name='Scan for Veracode_Testing, with login/crawl scripts'
+2020/02/06-21:39:01 INFO: Updating scan named 'Scan for Veracode_Testing, with login/crawl scripts' to scan ASAP
+2020/02/06-21:39:01 INFO: Exporting scan spec data for scan named 'Scan for Veracode_Testing, with login/crawl scripts'
+2020/02/06-21:39:02 INFO: Successful response: <Response [204]>
 ```
 
 ## Using Applications.py

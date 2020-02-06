@@ -1,28 +1,38 @@
 #!/usr/bin/env python3
 #=================================================================================================================
-# DynamicAnalysis class that uses the Veracode Dynamic Analysis REST API. 
-# Can be used as a Python module or as a command line.
-# See main() for example use cases.
+# DynamicAnalysis.py: Python class that uses the Veracode Dynamic Analysis REST API. 
+#                     Can be used as a Python module or as a command line.
+#                     See README.md for example runs.
 #
 # COMMAND LINE USAGE: 
-# $ ./DynamicAnalysis.py -h
-# usage: DynamicAnalysis.py [-h] --action {create,export,update_crawl_script}
-#                           --name NAME [--start START_DATE] [--team TEAMID]
-#                           [--filename FILENAME]
-#
-# optional arguments:
-#  -h, --help            show this help message and exit
-#  --action {create,export,update_crawl_script}
-#                        Scan Action.
-#  --name NAME           Scan Name. Example: "Scan MyApp with form auth and
-#                        crawl script".
-#  --start START_DATE    Start Date for scan. Applicable when --action=create.
-#                        Example: "2020-03-03T02:00+00:00". Default: (not
-#                        scheduled).
-#  --team TEAMID         Team ID. Applicable when --action=create. If empty,
-#                        only Security Leads will have visibility.
-#  --filename FILENAME   Path to file. CSV file when --action=create. Path to
-#                        Selenium script when --action=update_crawl_script.
+#  usage: DynamicAnalysis.py [-h] --action
+#                            {create_analysis,export_analysis,update_crawl_script,create_crawl_script,scan_now}
+#                            [--scan-name SCAN_NAME] [--start START_DATE]
+#                            [--team TEAMID] [--filename FILENAME]
+#                            [--output-filename OUTPUT_FILENAME]
+#                            [--base-url BASE_URL]
+#  
+#  optional arguments:
+#    -h, --help            show this help message and exit
+#    --action {create_analysis,export_analysis,update_crawl_script,create_crawl_script,scan_now}
+#                          Script Action.
+#    --scan-name SCAN_NAME
+#                          Scan Name. Example: "Scan MyApp".
+#    --start START_DATE    Start Date for scan. Applicable when
+#                          --action=create_analysis. Example:
+#                          "2020-03-03T02:00+00:00". Default: (not scheduled).
+#    --team TEAMID         Team ID. Applicable when --action=create_analysis. If
+#                          empty, only Security Leads will have visibility.
+#    --filename FILENAME   Path to input file name. CSV file when
+#                          --action=create_analysis. Path to Selenium script when
+#                          --action=update_crawl_script. Path to input text file
+#                          (list of paths) for new_crawl_script.
+#    --output-filename OUTPUT_FILENAME
+#                          Path to output file name. Required for
+#                          --action=create_crawl_script (extension should be
+#                          ".side").
+#    --base-url BASE_URL   Base URL for crawl script. Required for
+#                          --action=create_crawl_script.
 #=================================================================================================================
 import os, sys, requests, json, logging, csv, argparse
 import JsonExport
@@ -35,6 +45,7 @@ data_dir=os.environ.get("HOME")+ "/data/"
 #urllib3.disable_warnings()
 #verifyCert=False
 verifyCert=True
+
 
 ### DynamicAnalysis class that uses the Veracode Dynamic Analysis REST API. 
 class DynamicAnalysis:
@@ -50,7 +61,7 @@ class DynamicAnalysis:
 
             if response.ok:
                 if (export):
-                    json_file_base = data_dir + "WAS_CSAPI_DetailedScan"
+                    json_file_base = data_dir + "WAS_CSAPI_Scan_Details"
                     JsonExport.saveFormatted(response.json(), json_file_base)
                     log.info("Saved Veracode scan details for '%s' to %s.json", scan_name, json_file_base)
                 return response.json()
@@ -65,9 +76,32 @@ class DynamicAnalysis:
             sys.exit(1)
 
 
+    ### get_analysis_details: Get analysis details for a given analysis ID 
+    def get_analysis_details(self, scan_name, data, export=False):
+        try:
+            analysis_details_url = data["_embedded"]["analyses"][0]["_links"]["self"]["href"]
+            log.debug("Sending request to %s", analysis_details_url)
+            response = requests.get(analysis_details_url, auth=RequestsAuthPluginVeracodeHMAC(), headers=self.headers, verify=verifyCert)
 
-    ### get_scan(): get scan metadata and details (to JSON files) for given scan_name
-    def get_scan(self, scan_name, export=False):
+            if response.ok:
+                if (export):
+                    json_file_base = data_dir + "WAS_CSAPI_Analysis_Details"
+                    JsonExport.saveFormatted(response.json(), json_file_base)
+                    log.info("Saved Veracode analysis details for '%s' to %s.json", scan_name, json_file_base)
+                return response.json()
+            else:
+                log.error("Request for analysis details failed with %s code", response.text)
+                prettyPrintObj(response.json())
+                sys.exit(1)
+
+        except requests.RequestException as e:
+            log.error("Request for analysis details failed.")
+            print(e)
+            sys.exit(1)
+
+
+    ### get_analysis(): get analysis summary for a given scan name
+    def get_analysis(self, scan_name, export=False):
         log.info("Exporting scan spec data for scan named '%s'", scan_name)
         api_base="https://api.veracode.com/was/configservice/v1/analyses"
         try:
@@ -77,11 +111,12 @@ class DynamicAnalysis:
             data = response.json()
             if response.ok:
                 if (export):
-                    json_file_base = data_dir + "WAS_CSAPI_AnalysisSummary"
+                    json_file_base = data_dir + "WAS_CSAPI_Analysis_Summary"
                     JsonExport.saveFormatted(data, json_file_base)
                     log.info("Saved Veracode scan spec for '%s' to %s.json", scan_name, json_file_base)
                 scan_details = self.get_scan_details(scan_name, data, export)
-                return (data, scan_details)
+                analysis_details = self.get_analysis_details(scan_name, data, export)
+                return (data, scan_details, analysis_details)
             else:
                 log.error("Request for scan spec failed with %s code", response.text)
                 prettyPrintObj(response.json())
@@ -221,10 +256,11 @@ class DynamicAnalysis:
 
         # Get Scan metadata and details
         log.info("Updating crawl script for scan named '%s' from %s", scan_name, crawl_script_filename)
-        (scan_data, scan_details) = self.get_scan(scan_name, False)
+        (scan_data, scan_details, analysis_details) = self.get_analysis(scan_name, False)
         log.debug("Scan Details: %s", scan_details)
         scan_id = scan_details["_embedded"]["scans"][0]["scan_id"]
         url = scan_details["_embedded"]["scans"][0]["_links"]["scan_config"]["href"]
+        #log.debug("Analysis Details: %s", analysis_details)
 
         # Get crawl script data
         log.debug("Reading crawl script data from %s", crawl_script_filename)
@@ -245,9 +281,9 @@ class DynamicAnalysis:
                         }  
 
         # Send scan config update REST call 
-        parm = "&method=PATCH"
+        parm = "&method=PATCH" # using "&" because url already has a parameter
         url = url + parm
-        log.info("Updating scan ID %s by sending a PUT request to %s", url)
+        log.info("Updating scan %s by sending a PUT request to %s", scan_name, url)
         log.debug("PUT Body: " + json.dumps(scan_config, sort_keys=True, indent=4))
         response = requests.put(url, auth=RequestsAuthPluginVeracodeHMAC(), headers=self.headers, json=scan_config, verify=verifyCert)
         if response.ok:
@@ -258,18 +294,99 @@ class DynamicAnalysis:
             sys.exit(1)
 
 
+
+    ### scan_now(): Update a scan's schedule to start ASAP
+    def scan_now(self, scan_name):
+
+        # Get Scan metadata and the current schedule details
+        log.info("Updating scan named '%s' to scan ASAP", scan_name)
+        (scan_data, scan_details, analysis_details) = self.get_analysis(scan_name, False)
+        scan_id = scan_details["_embedded"]["scans"][0]["scan_id"]
+        current_schedule = analysis_details["schedule"]
+        log.debug("Current Scan Schedule: %s", json.dumps(current_schedule))
+        url = analysis_details["_links"]["self"]["href"]
+
+        # Build schedule structure
+        schedule_data = {"schedule": {"now": True, "duration": { "length": 3, "unit": "DAY" }}}
+        log.debug("New schedule data: %s", schedule_data)
+
+        # Send scan config update REST call 
+        parm = "?method=PATCH"
+        url = url + parm
+        log.info("Updating scan by sending a PUT request to %s", url)
+        log.debug("PUT Body: " + json.dumps(schedule_data, sort_keys=True, indent=4))
+        response = requests.put(url, auth=RequestsAuthPluginVeracodeHMAC(), headers=self.headers, json=schedule_data, verify=verifyCert)
+        if response.ok:
+            log.info("Successful response: %s", str(response))
+            return response
+        else:
+            log.error("Request to update scan schedule failed with %s code: %s", response.status_code, response.text)
+            sys.exit(1)
+
+
+    ### create_crawl_script(): Create a new crawl script for later use 
+    def create_crawl_script(self, input_filename, base_url, crawl_script_filename):
+
+        # Create a base JSON structure for crawl script
+        script_data = { "id":"aaaaaaaa-bbbb-cccc-dddd-000000000001", "version":"2.0", "name":"Simple Crawl Script", "url":"", \
+                        "tests": [{ "id":"aaaaaaaa-bbbb-cccc-dddd-000000000002", "name":"Happy Path", "commands":[] }] , \
+                        "suites": [{ "id": "4409edf9-9781-440d-a742-bb3d18c6a0a6", "name": "Default Suite", "persistSession": False, \
+                                     "parallel": False, "timeout": 300, "tests": ["aaaaaaaa-bbbb-cccc-dddd-000000000002"] }], \
+                        "urls": [base_url], "plugins": [] }
+
+        # Add base URL for crawling
+        script_data["url"] = base_url
+
+        # Add list of crawl destinations, using the Selenium open command
+        commands = []
+        with open(input_filename) as fp:
+            for line in fp:
+                target = line.strip()
+                commands.append({"command":"open", "target":target})
+
+        # Save crawl script data to file
+        script_data["tests"][0]["commands"] = commands
+        with open(crawl_script_filename, "w") as fp:
+            fp.write(json.dumps(script_data, sort_keys=False, indent=2)) 
+
 ### validate_args(): Validate command line arguments
 def validate_args(args):
 
     # Make sure there's a CSV file name provided for create action
-    if ((args.scan_action == "create") and (args.filename == None)):
-        log.error("To create a scan, please provide a CSV file name via --filename.")
+    if ((args.script_action == "create_analysis") and ((args.filename == None) or (args.scan_name == None))):
+        log.error("To create an analysis, please provide a CSV file name via --filename and a scan name via --scan_name.")
         sys.exit(1)
 
     # Make sure there's a crawl script file name provided for update_crawl_script action
-    if ((args.scan_action == "update_crawl_script") and (args.filename == None)):
+    if ((args.script_action == "update_crawl_script") and (args.filename == None)):
         log.error("To update a crawl script, please provide a crawl script file name via --filename.")
         sys.exit(1)
+
+    # Make sure there's an input file name provided for create_crawl_script action
+    if ((args.script_action == "create_crawl_script") and (args.filename == None)):
+        log.error("To create a crawl script, please provide an input file name via --filename.")
+        sys.exit(1)
+
+    # Make sure there's an output file name provided for create_crawl_script action
+    if ((args.script_action == "create_crawl_script") and (args.output_filename == None)):
+        log.error("To create a crawl script, please provide an output filename via --output-filename.")
+        sys.exit(1)
+
+    # Make sure there's a base URL provided for create_crawl_script action
+    if ((args.script_action == "create_crawl_script") and (args.base_url == None)):
+        log.error("To create a crawl script, please provide a base URL via --base-url.")
+        sys.exit(1)
+
+    # Make sure that the scan name is included for scan_now action
+    if ((args.script_action == "scan_now") and (args.scan_name == None)):
+        log.error("To scan now/ASAP, please provide a scan name via --scan-name.")
+        sys.exit(1)
+
+    # Make sure that the scan name is included for export_analysis action
+    if ((args.script_action == "export_analysis") and (args.scan_name == None)):
+        log.error("To export analysis data, please provide a scan name via --scan-name.")
+        sys.exit(1)
+
 
     # TODO: Validate args.start_date (date string format)
     # TODO: Validate args.filename (file exists, format of content)
@@ -278,14 +395,6 @@ def validate_args(args):
 
 ### main()
 if __name__ == "__main__":
-    # Define some defaults
-    #name = "Scan created by python script DynamicAnalysis.py"
-    name = ""
-    start_date=""
-    teamId = ""
-    filename = ""
-    action_default = "export"
-    action_choices = ["create","export","update_crawl_script"]
 
     # Configure logging
     log = logging.getLogger(app_name)
@@ -295,19 +404,24 @@ if __name__ == "__main__":
     log.setLevel(logging.DEBUG)
 
     # Read CLI Options
+    action_choices = ["create_analysis","export_analysis","update_crawl_script","create_crawl_script","scan_now"]
     parser = argparse.ArgumentParser()
-    parser.add_argument('--action', help='Scan Action.', dest="scan_action", choices=action_choices, required=True)
-    parser.add_argument('--name', help='Scan Name. Example: "Scan MyApp with form auth and crawl script".', dest="name", default=name, required=True)
-    parser.add_argument('--start', help='Start Date for scan. Applicable when --action=create. Example: "2020-03-03T02:00+00:00". Default: (not scheduled).', dest="start_date", default=start_date)
-    parser.add_argument('--team', help='Team ID. Applicable when --action=create. If empty, only Security Leads will have visibility.', dest="teamId", default=teamId)
-    parser.add_argument('--filename', help='Path to file. CSV file when --action=create. Path to Selenium script when --action=update_crawl_script.', dest="filename")
+    parser.add_argument('--action', help='Script Action.', dest="script_action", choices=action_choices, required=True)
+    parser.add_argument('--scan-name', help='Scan Name. Example: "Scan MyApp".', dest="scan_name")
+    parser.add_argument('--start', help='Start Date for scan. Applicable when --action=create_analysis. Example: "2020-03-03T02:00+00:00". Default: (not scheduled).', dest="start_date")
+    parser.add_argument('--team', help='Team ID. Applicable when --action=create_analysis. If empty, only Security Leads will have visibility.', dest="teamId")
+    parser.add_argument('--filename', help='Path to input file name. CSV file when --action=create_analysis. Path to Selenium script when --action=update_crawl_script. Path to input text file (list of paths) for new_crawl_script.', dest="filename")
+    parser.add_argument('--output-filename', help='Path to output file name. Required for --action=create_crawl_script (extension should be ".side").', dest="output_filename")
+    parser.add_argument('--base-url', help='Base URL for crawl script. Required for --action=create_crawl_script.', dest="base_url")
+
+    # Parse and validation CLI parameters
     args = parser.parse_args()
     validate_args(args)
 
     # Instantiate class
     a = DynamicAnalysis()
 
-    if (args.scan_action == "create"):
+    if (args.script_action == "create_analysis"):
 
         # Build-up the scan request data:
         # - Set the visibility
@@ -323,17 +437,23 @@ if __name__ == "__main__":
         if (args.start_date != ""):
             schedule = { "start_date": args.start_date, "duration": { "length": 1, "unit": "DAY" } }
             # - Build the request body 
-            scan_request_data = {"name": args.name, "scans": scans, "schedule": schedule, "visibility": visibility} 
+            scan_request_data = {"name": args.scan_name, "scans": scans, "schedule": schedule, "visibility": visibility} 
         else:
             # - Build the request body 
-            scan_request_data = {"name": args.name, "scans": scans, "visibility": visibility} 
+            scan_request_data = {"name": args.scan_name, "scans": scans, "visibility": visibility} 
 
 
         # Send request
         a.create_scan(scan_request_data)
 
-    elif (args.scan_action == "export"):
-        a.get_scan(args.name, True)
+    elif (args.script_action == "export_analysis"):
+        a.get_analysis(args.scan_name, True)
 
-    elif (args.scan_action == "update_crawl_script"):
-        a.update_crawl_script(args.name, args.filename)
+    elif (args.script_action == "update_crawl_script"):
+        a.update_crawl_script(args.scan_name, args.filename)
+
+    elif (args.script_action == "create_crawl_script"):
+        a.create_crawl_script(args.filename, args.base_url, args.output_filename)
+
+    elif (args.script_action == "scan_now"):
+        a.scan_now(args.scan_name)
