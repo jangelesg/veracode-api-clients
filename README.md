@@ -13,7 +13,7 @@
         -   [Creating Dynamic Analysis scans with form login and crawl scripts](#creating-dynamic-analysis-scans-with-form-login-and-crawl-scripts)
             -   [CSV file format](#csv-file-format)
         -   [Exporting Scan Information](#exporting-scan-information)
-            -   [Using exports as part of Gitlab CI jobs](#using-exports-as-part-of-gitlab-ci-jobs)
+            -   [Using exports as part of Pipeline/CI/CD jobs](#using-exports-as-part-of-pipelinecicd-jobs)
         -   [Creating a simple Crawl Script from a path list](#creating-a-simple-crawl-script-from-a-path-list)
         -   [Updating Crawl Scripts](#updating-crawl-scripts)
     -   [Triggering the immediate execution for an existing scan](#triggering-the-immediate-execution-for-an-existing-scan)
@@ -178,7 +178,7 @@ $ ./DynamicAnalysis.py --action=export_analysis --scan-name 'Scan DVNA, with log
 2020/02/06-22:48:25 INFO: Saved Veracode analysis details for 'Scan DVNA, with login/crawl scripts' to /app/data/WAS_CSAPI_Analysis_Details.json
 ```
 
-#### Using exports as part of Gitlab CI jobs
+#### Using exports as part of Pipeline/CI/CD jobs
 
 The export_analysis action can be used to check if a Dynamic Analysis scan passed or failed, with a simple severity count check...
 
@@ -193,12 +193,20 @@ $ grep PASSED scan.log
 
 
 ### Example of scan that failed with at least one Medium+ sev flaws:
-
 $ ./DynamicAnalysis.py --action=export_analysis --scan-name="Identity Manager Dynamic Analysis" 2>scan.log
 
 $ grep FAILED scan.log
 2020/02/07-17:50:19 WARNING: FAILED. (VeryHigh:0, High:0, Med:6, Low:5)
 
+### Using the sample looper script
+#... when the results are not yet available:
+$ ./LoopUntilScanResults.sh "Scan My App"
+[02/07/20-19:26:37] Results not available:  "FINISHED_VERIFYING_RESULTS" (try 1 of 96)
+
+#... when the results are available:
+$ ./LoopUntilScanResults.sh "Scan MyApp"
+2020/02/07-19:25:38 WARNING: FAILED. (VeryHigh:0, High:0, Med:6, Low:5)
+STATUS: FAILED
 ```
 
 ### Creating a simple Crawl Script from a path list
