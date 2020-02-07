@@ -26,3 +26,5 @@ restapi/MyExportAnalysis.sh
 restapi/MyScanNow.sh
 restapi/MyUpdateCrawlScript.sh
 sample_data/dvna-url-list.txt
+java-wrapper/
+restapi/scan.log

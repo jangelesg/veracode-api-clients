@@ -13,6 +13,7 @@
         -   [Creating Dynamic Analysis scans with form login and crawl scripts](#creating-dynamic-analysis-scans-with-form-login-and-crawl-scripts)
             -   [CSV file format](#csv-file-format)
         -   [Exporting Scan Information](#exporting-scan-information)
+            -   [Using exports as part of Gitlab CI jobs](#using-exports-as-part-of-gitlab-ci-jobs)
         -   [Creating a simple Crawl Script from a path list](#creating-a-simple-crawl-script-from-a-path-list)
         -   [Updating Crawl Scripts](#updating-crawl-scripts)
     -   [Triggering the immediate execution for an existing scan](#triggering-the-immediate-execution-for-an-existing-scan)
@@ -175,6 +176,29 @@ $ ./DynamicAnalysis.py --action=export_analysis --scan-name 'Scan DVNA, with log
 2020/02/06-22:48:24 INFO: Saved Veracode scan spec for 'Scan DVNA, with login/crawl scripts' to /app/data/WAS_CSAPI_Analysis_Summary.json
 2020/02/06-22:48:24 INFO: Saved Veracode scan details for 'Scan DVNA, with login/crawl scripts' to /app/data/WAS_CSAPI_Scan_Details.json
 2020/02/06-22:48:25 INFO: Saved Veracode analysis details for 'Scan DVNA, with login/crawl scripts' to /app/data/WAS_CSAPI_Analysis_Details.json
+```
+
+#### Using exports as part of Gitlab CI jobs
+
+The export_analysis action can be used to check if a Dynamic Analysis scan passed or failed, with a simple severity count check...
+
+**WARNING**: this mechanism currently doesn't support checks against a linked application's policy.
+
+```bash
+### Example of scan that passed with no Medium+ sev flaws:
+$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Mix_Status_Dynamic_Analysis_30_Jan_final" 2>scan.log
+
+$ grep PASSED scan.log
+2020/02/07-17:45:37 INFO: PASSED. (VeryHigh:0, High:0, Med:0, Low:0)
+
+
+### Example of scan that failed with at least one Medium+ sev flaws:
+
+$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Identity Manager Dynamic Analysis" 2>scan.log
+
+$ grep FAILED scan.log
+2020/02/07-17:50:19 WARNING: FAILED. (VeryHigh:0, High:0, Med:6, Low:5)
+
 ```
 
 ### Creating a simple Crawl Script from a path list

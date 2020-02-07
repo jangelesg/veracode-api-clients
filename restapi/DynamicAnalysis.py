@@ -52,74 +52,85 @@ class DynamicAnalysis:
     headers = {"User-Agent": "Veracode DynamicAnalysis REST API Client"}
 
 
-    ### get_scan_details: Get scan details for a given scan_name (the 1st one if there's more than one match)
-    def get_scan_details(self, scan_name, data, export=False):
+    #def get_data_request: Send get request for JSON data from a specific URL
+    def get_data_request(self, url, filename="JsonData", export=False):
         try:
-            scan_details_url = data["_embedded"]["analyses"][0]["_links"]["scans"]["href"]
-            log.debug("Sending request to %s", scan_details_url)
-            response = requests.get(scan_details_url, auth=RequestsAuthPluginVeracodeHMAC(), headers=self.headers, verify=verifyCert)
+            #scan_details_url = data["_embedded"]["analyses"][0]["_links"]["scans"]["href"]
+            log.debug("Sending request to %s", url)
+            response = requests.get(url, auth=RequestsAuthPluginVeracodeHMAC(), headers=self.headers, verify=verifyCert)
 
             if response.ok:
                 if (export):
-                    json_file_base = data_dir + "WAS_CSAPI_Scan_Details"
+                    json_file_base = data_dir + filename
                     JsonExport.saveFormatted(response.json(), json_file_base)
-                    log.info("Saved Veracode scan details for '%s' to %s.json", scan_name, json_file_base)
+                    log.info("Saved data to %s.json", json_file_base)
                 return response.json()
             else:
-                log.error("Request for scan details failed with %s code", response.text)
-                prettyPrintObj(response.json())
-                sys.exit(1)
+                log.error("Request for %s failed with %s code", filename, response.text)
+                #sys.exit(1)
 
         except requests.RequestException as e:
-            log.error("Request for scan details failed.")
+            log.error("Request for %s failed.", filename)
             print(e)
-            sys.exit(1)
-
-
-    ### get_analysis_details: Get analysis details for a given analysis ID 
-    def get_analysis_details(self, scan_name, data, export=False):
-        try:
-            analysis_details_url = data["_embedded"]["analyses"][0]["_links"]["self"]["href"]
-            log.debug("Sending request to %s", analysis_details_url)
-            response = requests.get(analysis_details_url, auth=RequestsAuthPluginVeracodeHMAC(), headers=self.headers, verify=verifyCert)
-
-            if response.ok:
-                if (export):
-                    json_file_base = data_dir + "WAS_CSAPI_Analysis_Details"
-                    JsonExport.saveFormatted(response.json(), json_file_base)
-                    log.info("Saved Veracode analysis details for '%s' to %s.json", scan_name, json_file_base)
-                return response.json()
-            else:
-                log.error("Request for analysis details failed with %s code", response.text)
-                prettyPrintObj(response.json())
-                sys.exit(1)
-
-        except requests.RequestException as e:
-            log.error("Request for analysis details failed.")
-            print(e)
-            sys.exit(1)
+            #sys.exit(1)
 
 
     ### get_analysis(): get analysis summary for a given scan name
-    def get_analysis(self, scan_name, export=False):
+    def get_analysis(self, scan_name, export=False, recurse=True):
         log.info("Exporting scan spec data for scan named '%s'", scan_name)
         api_base="https://api.veracode.com/was/configservice/v1/analyses"
         try:
             arg1 = "name=" + scan_name
             log.debug("Sending request to %s", api_base)
             response = requests.get(api_base+"?"+arg1, auth=RequestsAuthPluginVeracodeHMAC(), headers=self.headers, verify=verifyCert)
-            data = response.json()
+            analysis_summary = response.json()
             if response.ok:
+                # Get Analysis Summary data
                 if (export):
-                    json_file_base = data_dir + "WAS_CSAPI_Analysis_Summary"
-                    JsonExport.saveFormatted(data, json_file_base)
+                    json_file_base = data_dir + "Exported_Analysis_Summary"
+                    JsonExport.saveFormatted(analysis_summary, json_file_base)
                     log.info("Saved Veracode scan spec for '%s' to %s.json", scan_name, json_file_base)
-                scan_details = self.get_scan_details(scan_name, data, export)
-                analysis_details = self.get_analysis_details(scan_name, data, export)
-                return (data, scan_details, analysis_details)
+
+                # If recursion is requested, get data for embedded links
+                if (recurse): 
+                    # Get Scan Details data
+                    url = analysis_summary["_embedded"]["analyses"][0]["_links"]["scans"]["href"]
+                    scan_details = self.get_data_request(url, "Exported_Detailed_Scan", export)
+
+                    # Get Analysis Details data
+                    url = analysis_summary["_embedded"]["analyses"][0]["_links"]["self"]["href"]
+                    analysis = self.get_data_request(url, "Exported_Analysis", export)
+
+                    # Get Latest Analysis Occurrence data
+                    url = analysis_summary["_embedded"]["analyses"][0]["_links"]["latest_occurrence"]["href"]
+                    latest_occurrence = self.get_data_request(url, "Exported_Detailed_Scan", export)
+
+                    # Get analysis_occurrence_id from latest scan occurrence
+                    analysis_occurrence_id  = latest_occurrence["analysis_occurrence_id"]
+                    base_url="https://api.veracode.com/was/configservice/v1"
+                    url = "%s/analysis_occurrences/%s/scan_occurrences" % (base_url, analysis_occurrence_id)
+                    detailed_scan_occurrence = self.get_data_request(url, "Exported_DetailedScanOccurrence", export)
+                    summary = detailed_scan_occurrence["_embedded"]["scan_occurrences"][0]["summary"]
+                    log.debug("Summary: %s", json.dumps(summary, sort_keys=True, indent=0))
+                    very_high_sev = int(detailed_scan_occurrence["_embedded"]["scan_occurrences"][0]["count_of_very_high_sev_flaws"])
+                    high_sev = int(detailed_scan_occurrence["_embedded"]["scan_occurrences"][0]["count_of_high_sev_flaws"])
+                    medium_sev = int(detailed_scan_occurrence["_embedded"]["scan_occurrences"][0]["count_of_medium_sev_flaws"])
+                    low_sev = int(detailed_scan_occurrence["_embedded"]["scan_occurrences"][0]["count_of_low_sev_flaws"])
+                    total = very_high_sev + high_sev + medium_sev
+                    if (total > 0):
+                        log.warn("FAILED. (VeryHigh:%d, High:%s, Med:%s, Low:%s)", very_high_sev, high_sev, medium_sev, low_sev)
+                    else:
+                        log.info("PASSED. (VeryHigh:%d, High:%s, Med:%s, Low:%s)", very_high_sev, high_sev, medium_sev, low_sev)
+
+                    # Get Audits data
+                    url = analysis_summary["_embedded"]["analyses"][0]["_links"]["audits"]["href"]
+                    audit_data = self.get_data_request(url, "Exported_Audit_Data", export)
+
+                    return (analysis_summary, scan_details, analysis, latest_occurrence, audit_data)
+                else:
+                    return (analysis_summary)
             else:
                 log.error("Request for scan spec failed with %s code", response.text)
-                prettyPrintObj(response.json())
                 sys.exit(1)
 
         except requests.RequestException as e:
@@ -256,7 +267,7 @@ class DynamicAnalysis:
 
         # Get Scan metadata and details
         log.info("Updating crawl script for scan named '%s' from %s", scan_name, crawl_script_filename)
-        (scan_data, scan_details, analysis_details) = self.get_analysis(scan_name, False)
+        (analysis_summary, scan_details, analysis_details, latest_occurrence, audit_data) = self.get_analysis(scan_name, export=False, recurse=True)
         log.debug("Scan Details: %s", scan_details)
         scan_id = scan_details["_embedded"]["scans"][0]["scan_id"]
         url = scan_details["_embedded"]["scans"][0]["_links"]["scan_config"]["href"]
@@ -300,7 +311,7 @@ class DynamicAnalysis:
 
         # Get Scan metadata and the current schedule details
         log.info("Updating scan named '%s' to scan ASAP", scan_name)
-        (scan_data, scan_details, analysis_details) = self.get_analysis(scan_name, False)
+        (analysis_summary, scan_details, analysis_details, latest_occurrence, audit_data) = self.get_analysis(scan_name, export=False, recurse=True)
         scan_id = scan_details["_embedded"]["scans"][0]["scan_id"]
         current_schedule = analysis_details["schedule"]
         log.debug("Current Scan Schedule: %s", json.dumps(current_schedule))
@@ -447,7 +458,7 @@ if __name__ == "__main__":
         a.create_scan(scan_request_data)
 
     elif (args.script_action == "export_analysis"):
-        a.get_analysis(args.scan_name, True)
+        a.get_analysis(args.scan_name, export=True, recurse=True)
 
     elif (args.script_action == "update_crawl_script"):
         a.update_crawl_script(args.scan_name, args.filename)
