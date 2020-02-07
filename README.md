@@ -155,7 +155,7 @@ The CSV file can include these values:
 | ism_gateway_id (\*\*)  | ID for ISM gateway                                         |
 
 -   (\*) Mandatory field
--   (\*\*) To obtain those IDs, you can use `DynamicAnalysis.py --action=export --name=<EXISTING_SCAN_NAME>` and view the resulting JSON file content.
+-   (\*\*) To obtain those IDs, you can use `DynamicAnalysis.py --action=export_analysis --name=<EXISTING_SCAN_NAME>` and view the resulting JSON file content.
 
 See this [sample CSV file](sample_data/dynscan-dvna.csv) for an example.
 
