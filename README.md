@@ -186,14 +186,14 @@ The export_analysis action can be used to check if a Dynamic Analysis scan passe
 
 ```bash
 ### Example of scan that passed with no Medium+ sev flaws:
-$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Mix_Status_Dynamic_Analysis_30_Jan_final" 2>scan.log
+$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Scan MyApp" 2>scan.log
 
 $ grep PASSED scan.log
 2020/02/07-17:45:37 INFO: PASSED. (VeryHigh:0, High:0, Med:0, Low:0)
 
 
 ### Example of scan that failed with at least one Medium+ sev flaws:
-$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Identity Manager Dynamic Analysis" 2>scan.log
+$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Scan MyApp" 2>scan.log
 
 $ grep FAILED scan.log
 2020/02/07-17:50:19 WARNING: FAILED. (VeryHigh:0, High:0, Med:6, Low:5)
