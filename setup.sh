@@ -1,4 +1,11 @@
 #!/bin/bash
+# Setup python virtual env
+python3 -m venv .venv
+chmod 700 .venv/bin/activate
+. .venv/bin/activate
+echo '. .venv/bin/activate' >> ~/.profile
+chmod 700 ~/.profile
+
 # Install Python dependencies
 pip3 install -r requirements.txt --user
 
