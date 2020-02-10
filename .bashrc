@@ -11,7 +11,7 @@ if [ ! -d .venv ];then
   python3 -m venv .venv
   chmod 700 .venv/bin/activate
   . .venv/bin/activate
-  pip3 install -r requirements.txt --user
+  pip3 install -r requirements.txt
 fi
 
 # Create output data directory (used by 'DynamicAnalysis.py --action=export ...')
