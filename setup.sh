@@ -3,8 +3,8 @@
 python3 -m venv .venv
 chmod 700 .venv/bin/activate
 . .venv/bin/activate
-echo '. .venv/bin/activate' >> ~/.profile
-chmod 700 ~/.profile
+echo '. .venv/bin/activate' >> ~/.bash_profile
+chmod 700 ~/.bash_profile
 
 # Install Python dependencies
 pip3 install -r requirements.txt --user
