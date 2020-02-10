@@ -30,7 +30,7 @@ fi
 
 # If needed, warn about the missing veracode credentials file
 if [ ! -f "$VC_CREDS_FILE" ];then
-  echo "\n*** WARNING: Please create a $VC_CREDS_FILE file (see README.md for details) ***"
+  echo -e "\n*** WARNING: Please create a $VC_CREDS_FILE file (see README.md for details) ***"
 fi
 
 # Activate Python virtual env.
