@@ -13,10 +13,11 @@
         -   [Creating Dynamic Analysis scans with form login and crawl scripts](#creating-dynamic-analysis-scans-with-form-login-and-crawl-scripts)
             -   [CSV file format](#csv-file-format)
         -   [Exporting Scan Information](#exporting-scan-information)
-            -   [Using exports as part of Pipeline/CI/CD jobs](#using-exports-as-part-of-pipelinecicd-jobs)
+    -   [Pipeline/Automation Tips](#pipelineautomation-tips)
         -   [Creating a simple Crawl Script from a path list](#creating-a-simple-crawl-script-from-a-path-list)
         -   [Updating Crawl Scripts](#updating-crawl-scripts)
-    -   [Triggering the immediate execution for an existing scan](#triggering-the-immediate-execution-for-an-existing-scan)
+        -   [Triggering the immediate execution for an existing scan](#triggering-the-immediate-execution-for-an-existing-scan)
+        -   [Using exports as part of Pipeline/CI/CD jobs](#using-exports-as-part-of-pipelinecicd-jobs)
     -   [Using Applications.py](#using-applicationspy)
         -   [Exporting all app profile data](#exporting-all-app-profile-data)
 -   [Bash Scripts](#bash-scripts)
@@ -214,38 +215,11 @@ $ ./DynamicAnalysis.py --action=export_analysis --scan-name 'Scan DVNA, with log
 2020/02/06-22:48:25 INFO: Saved Veracode analysis details for 'Scan DVNA, with login/crawl scripts' to /app/data/WAS_CSAPI_Analysis_Details.json
 ```
 
-#### Using exports as part of Pipeline/CI/CD jobs
-
-The export_analysis action can be used to check if a Dynamic Analysis scan passed or failed, with a simple severity count check...
-
-**WARNING**: this mechanism currently doesn't support checks against a linked application's policy.
-
-```bash
-### Example of scan that passed with no Medium+ sev flaws:
-$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Scan MyApp" 2>scan.log
-
-$ grep PASSED scan.log
-2020/02/07-17:45:37 INFO: PASSED. (VeryHigh:0, High:0, Med:0, Low:0)
-
-
-### Example of scan that failed with at least one Medium+ sev flaws:
-$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Scan MyApp" 2>scan.log
-
-$ grep FAILED scan.log
-2020/02/07-17:50:19 WARNING: FAILED. (VeryHigh:0, High:0, Med:6, Low:5)
-
-### Using the sample looper script
-#... when the results are not yet available:
-$ ./LoopUntilScanResults.sh "Scan MyApp"
-[02/07/20-19:26:37] Results not available:  "FINISHED_VERIFYING_RESULTS" (try 1 of 96)
-
-#... when the results are available:
-$ ./LoopUntilScanResults.sh "Scan MyApp"
-2020/02/07-19:25:38 WARNING: FAILED. (VeryHigh:0, High:0, Med:6, Low:5)
-STATUS: FAILED
-```
+## Pipeline/Automation Tips
 
 ### Creating a simple Crawl Script from a path list
+
+Automating the creation of a crawl script, from a list of application paths:
 
 ```bash
 $ vi ../data/dvna-path-list.txt
@@ -278,7 +252,7 @@ $ ./DynamicAnalysis.py --action=create_crawl_script --filename=../data/dvna-path
 
 ### Updating Crawl Scripts
 
-Example run to update the crawl script for an existing scan:
+Once you have a new crawl script, you can update an existing scan to use it:
 
 ```bash
 $ ./DynamicAnalysis.py --action=update_crawl_script --scan-name='Scan DVNA, with login/crawl scripts' --filename=../data/dvna-simple-crawl.side
@@ -288,13 +262,48 @@ $ ./DynamicAnalysis.py --action=update_crawl_script --scan-name='Scan DVNA, with
 2020/02/06-22:57:42 INFO: Successful response: <Response [204]>
 ```
 
-## Triggering the immediate execution for an existing scan
+### Triggering the immediate execution for an existing scan
+
+Then, you can trigger the scan to execute ASAP (via immediate queueing):
 
 ```bash
 $ ./DynamicAnalysis.py --action=scan_now --scan-name='Scan for Veracode_Testing, with login/crawl scripts'
 2020/02/06-21:39:01 INFO: Updating scan named 'Scan for Veracode_Testing, with login/crawl scripts' to scan ASAP
 2020/02/06-21:39:01 INFO: Exporting scan spec data for scan named 'Scan for Veracode_Testing, with login/crawl scripts'
 2020/02/06-21:39:02 INFO: Successful response: <Response [204]>
+```
+
+### Using exports as part of Pipeline/CI/CD jobs
+
+The export_analysis action can be used to check if a Dynamic Analysis scan passed or failed, with a simple severity count check...
+
+Wrapping this check inside of a loop that awaits for the scan results to be available can be useful for pipeline jobs. The bash script [LoopUntilScanResults.sh](restapi/LoopUntilScanResults.sh) is a good example of that.
+
+**WARNING**: this mechanism currently doesn't support checks against a linked application's policy.
+
+```bash
+### Example of scan that passed with no Medium+ sev flaws:
+$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Scan MyApp" 2>scan.log
+
+$ grep PASSED scan.log
+2020/02/07-17:45:37 INFO: PASSED. (VeryHigh:0, High:0, Med:0, Low:0)
+
+
+### Example of scan that failed with at least one Medium+ sev flaws:
+$ ./DynamicAnalysis.py --action=export_analysis --scan-name="Scan MyApp" 2>scan.log
+
+$ grep FAILED scan.log
+2020/02/07-17:50:19 WARNING: FAILED. (VeryHigh:0, High:0, Med:6, Low:5)
+
+### Using the sample looper script
+#... when the results are not yet available:
+$ ./LoopUntilScanResults.sh "Scan MyApp"
+[02/07/20-19:26:37] Results not available:  "FINISHED_VERIFYING_RESULTS" (try 1 of 96)
+
+#... when the results are available:
+$ ./LoopUntilScanResults.sh "Scan MyApp"
+2020/02/07-19:25:38 WARNING: FAILED. (VeryHigh:0, High:0, Med:6, Low:5)
+STATUS: FAILED
 ```
 
 ## Using Applications.py
