@@ -46,8 +46,44 @@ $ docker build -t veracode-api-clients .
 ### Run Docker image
 $ docker run -it --rm --mount type=bind,source="$PWD",target=/app --name veracode-api-clients veracode-api-clients
 
-### At first run:
-$ ./setup.sh
+### At first run, the .bashrc will do extra stuff:
+-- Setting you up for first time use by downloading python dependencies...
+Collecting requests (from -r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/51/bd/23c926cd341ea6b7dd0b2a00aba99ae0f828be89d72b2190f27c11d4b7fb/requests-2.22.0-py2.py3-none-any.whl (57kB)
+    100% |################################| 61kB 1.3MB/s
+Collecting veracode-api-signing (from -r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/c6/a3/79ad4de7975ce61e85e46c7e061a5faf1f08153cf9849a9a8bd01c881853/veracode_api_signing-19.9.0-py2.py3-none-any.whl
+Collecting httpie (from -r requirements.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/96/42/d2d51ef0d6e9c9ab1c94313f08813ece14bdc3d5b6d8f22abb8fe6f3dad9/httpie-2.0.0-py2.py3-none-any.whl (64kB)
+    100% |################################| 71kB 2.0MB/s
+Collecting urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 (from requests->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/e8/74/6e4f91745020f967d09332bb2b8b9b10090957334692eb88ea4afe91b77f/urllib3-1.25.8-py2.py3-none-any.whl (125kB)
+    100% |################################| 133kB 939kB/s
+Collecting idna<2.9,>=2.5 (from requests->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/14/2c/cd551d81dbe15200be1cf41cd03869a46fe7226e7450af7a6545bfc474c9/idna-2.8-py2.py3-none-any.whl (58kB)
+    100% |################################| 61kB 2.4MB/s
+Collecting chardet<3.1.0,>=3.0.2 (from requests->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/bc/a9/01ffebfb562e4274b6487b4bb1ddec7ca55ec7510b22e4c51f14098443b8/chardet-3.0.4-py2.py3-none-any.whl (133kB)
+    100% |################################| 143kB 1.5MB/s
+Collecting certifi>=2017.4.17 (from requests->-r requirements.txt (line 1))
+  Downloading https://files.pythonhosted.org/packages/b9/63/df50cac98ea0d5b006c55a399c3bf1db9da7b5a24de7890bc9cfd5dd9e99/certifi-2019.11.28-py2.py3-none-any.whl (156kB)
+    100% |################################| 163kB 1.3MB/s
+Collecting docopt==0.6.2 (from veracode-api-signing->-r requirements.txt (line 2))
+  Downloading https://files.pythonhosted.org/packages/a2/55/8f8cab2afd404cf578136ef2cc5dfb50baa1761b68c9da1fb1e4eed343c9/docopt-0.6.2.tar.gz
+Collecting Pygments>=2.5.2 (from httpie->-r requirements.txt (line 3))
+  Downloading https://files.pythonhosted.org/packages/be/39/32da3184734730c0e4d3fa3b2b5872104668ad6dc1b5a73d8e477e5fe967/Pygments-2.5.2-py2.py3-none-any.whl (896kB)
+    100% |################################| 901kB 986kB/s
+Installing collected packages: urllib3, idna, chardet, certifi, requests, Pygments, httpie, docopt, veracode-api-signing
+  Running setup.py install for docopt ... done
+Successfully installed Pygments-2.5.2 certifi-2019.11.28 chardet-3.0.4 docopt-0.6.2 httpie-2.0.0 idna-2.8 requests-2.22.0 urllib3-1.25.8 veracode-api-signing-19.9.0
+You are using pip version 9.0.3, however version 20.0.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+
+-- Creating /app/data directory
+
+*** WARNING: Please create a /app/.env file (see README.md for details) ***
+
+*** WARNING: Please create a /app/.veracode/credentials file (see README.md for details) ***
 ```
 
 ## Configuring Veracode credentials
@@ -65,7 +101,7 @@ $ chmod 600 $HOME/.veracode/credentials
 
 $ cp .env.TEMPLATE .env
 
-$ chmod 600 .env
+$ chmod 700 .env
 
 $ vi .env
 # Parameters that are normally static
@@ -200,7 +236,7 @@ $ grep FAILED scan.log
 
 ### Using the sample looper script
 #... when the results are not yet available:
-$ ./LoopUntilScanResults.sh "Scan My App"
+$ ./LoopUntilScanResults.sh "Scan MyApp"
 [02/07/20-19:26:37] Results not available:  "FINISHED_VERIFYING_RESULTS" (try 1 of 96)
 
 #... when the results are available:
