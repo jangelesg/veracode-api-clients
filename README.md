@@ -217,6 +217,8 @@ $ ./DynamicAnalysis.py --action=export_analysis --scan-name 'Scan DVNA, with log
 
 ## Pipeline/Automation Tips
 
+> NOTE: for additional pipeline automation tips, please refer to the [veracode-ci-automation](https://git.labs.nuance.com/security-testing/veracode-ci-automation).
+
 ### Creating a simple Crawl Script from a path list
 
 Automating the creation of a crawl script, from a list of application paths:
